@@ -1,13 +1,16 @@
-import boto3
 import os
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
-from dotenv import load_dotenv
 from enum import Enum
+from typing import Type, Optional, Union, Any, Sequence, List
+
+import boto3
+from dotenv import load_dotenv
 from httpx import AsyncClient
 from openai import AsyncAzureOpenAI
 from pydantic import BaseModel
-from pydantic_ai import Agent
+from pydantic_ai import Agent, Tool
+from pydantic_ai.mcp import MCPServer
 from pydantic_ai.models import Model
 from pydantic_ai.models.anthropic import AnthropicModel, AnthropicModelName
 from pydantic_ai.models.bedrock import BedrockConverseModel, BedrockModelName
@@ -17,7 +20,7 @@ from pydantic_ai.providers.anthropic import AnthropicProvider
 from pydantic_ai.providers.bedrock import BedrockProvider
 from pydantic_ai.providers.google_gla import GoogleGLAProvider
 from pydantic_ai.providers.openai import OpenAIProvider
-from typing import Type, Optional, Union, Any
+from pydantic_ai.tools import AgentDepsT, ToolFuncEither
 
 from core.nodes.base import Node
 from core.task import TaskContext
@@ -36,13 +39,16 @@ class ModelProvider(str, Enum):
 
 @dataclass
 class AgentConfig:
-    system_prompt: str
-    output_type: Optional[Type[Any]]
-    deps_type: Optional[Type[Any]]
     model_provider: ModelProvider
     model_name: Union[
         OpenAIModelName, AnthropicModelName, GeminiModelName, BedrockModelName
     ]
+    output_type: Any = str
+    deps_type: Optional[Type[Any]] = None
+    system_prompt: Optional[str] = "x"
+    instructions: Optional[str] = None
+    tools: Sequence[Tool[AgentDepsT] | ToolFuncEither[AgentDepsT, ...]] = ()
+    mcp_servers: Sequence[MCPServer] = ()
 
 
 class AgentNode(Node, ABC):
@@ -57,10 +63,14 @@ class AgentNode(Node, ABC):
         agent_wrapper = self.get_agent_config()
         self.agent = Agent(
             system_prompt=agent_wrapper.system_prompt,
+            instructions=agent_wrapper.instructions,
             output_type=agent_wrapper.output_type,
+            deps_type=agent_wrapper.deps_type,
             model=self.__get_model_instance(
                 agent_wrapper.model_provider, agent_wrapper.model_name
             ),
+            tools=agent_wrapper.tools,
+            mcp_servers=agent_wrapper.mcp_servers,
         )
 
     @abstractmethod
