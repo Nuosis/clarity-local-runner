@@ -1,8 +1,10 @@
+import asyncio
 import logging
 from abc import ABC
 from contextlib import contextmanager
-from dotenv import load_dotenv
 from typing import Dict, Optional, ClassVar, Type, Any
+
+from dotenv import load_dotenv
 
 from core.nodes.base import Node
 from core.nodes.router import BaseRouter
@@ -101,6 +103,10 @@ class Workflow(ABC):
         return node_class()
 
     def run(self, event: Any) -> TaskContext:
+        """Async wrapper for running the workflow for a given event."""
+        return asyncio.run(self.__run(event))
+
+    async def __run(self, event: Any) -> TaskContext:
         """Executes the workflow for a given event.
 
         Args:
@@ -123,16 +129,16 @@ class Workflow(ABC):
         while current_node_class:
             current_node = self.nodes[current_node_class].node
             with self.node_context(current_node_class.__name__):
-                task_context = current_node().process(task_context)
+                task_context = await current_node().process(task_context)
 
-            current_node_class = self._get_next_node_class(
+            current_node_class = await self._get_next_node_class(
                 current_node_class, task_context
             )
         task_context.metadata.pop("nodes")
         return task_context
 
-    def _get_next_node_class(
-        self, current_node_class: Type[Node], task_context: TaskContext
+    async def _get_next_node_class(
+            self, current_node_class: Type[Node], task_context: TaskContext
     ) -> Optional[Type[Node]]:
         """Determines the next node to execute in the workflow.
 
@@ -153,12 +159,12 @@ class Workflow(ABC):
 
         if node_config.is_router:
             router: BaseRouter = self.nodes[current_node_class].node()
-            return self._handle_router(router, task_context)
+            return await self._handle_router(router, task_context)
 
         return node_config.connections[0]
 
-    def _handle_router(
-        self, router: BaseRouter, task_context: TaskContext
+    async def _handle_router(
+            self, router: BaseRouter, task_context: TaskContext
     ) -> Optional[Type[Node]]:
         """Handles routing logic for router nodes.
 
