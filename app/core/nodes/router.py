@@ -25,7 +25,7 @@ class BaseRouter(Node):
         fallback: Optional default node to route to if no rules match
     """
 
-    def process(self, task_context: TaskContext) -> TaskContext:
+    async def process(self, task_context: TaskContext) -> TaskContext:
         """Processes the routing logic and updates task context.
 
         Args:

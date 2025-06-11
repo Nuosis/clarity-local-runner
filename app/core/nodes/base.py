@@ -38,7 +38,7 @@ class Node(ABC):
         return self.__class__.__name__
 
     @abstractmethod
-    def process(self, task_context: TaskContext) -> TaskContext:
+    async def process(self, task_context: TaskContext) -> TaskContext:
         """Processes the task context in the responsibility chain.
 
         This method implements the Chain of Responsibility pattern's handle

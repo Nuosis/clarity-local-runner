@@ -138,7 +138,7 @@ class Workflow(ABC):
         return task_context
 
     async def _get_next_node_class(
-            self, current_node_class: Type[Node], task_context: TaskContext
+        self, current_node_class: Type[Node], task_context: TaskContext
     ) -> Optional[Type[Node]]:
         """Determines the next node to execute in the workflow.
 
@@ -164,7 +164,7 @@ class Workflow(ABC):
         return node_config.connections[0]
 
     async def _handle_router(
-            self, router: BaseRouter, task_context: TaskContext
+        self, router: BaseRouter, task_context: TaskContext
     ) -> Optional[Type[Node]]:
         """Handles routing logic for router nodes.
 
