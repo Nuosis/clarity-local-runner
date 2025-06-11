@@ -22,7 +22,7 @@ from pydantic_ai.providers.bedrock import BedrockProvider
 from pydantic_ai.providers.google_gla import GoogleGLAProvider
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.settings import ModelSettings
-from pydantic_ai.tools import AgentDepsT, ToolFuncEither, ToolsPrepareFunc
+from pydantic_ai.tools import AgentDepsT, ToolFuncEither
 
 from core.nodes.base import Node
 from core.task import TaskContext
@@ -42,42 +42,44 @@ class ModelProvider(str, Enum):
 @dataclass
 class AgentConfig:
     """PydanticAI Agent wrapper.
-    model_provider: Specifies which model provider to use for this agent.
-        Supported providers include OpenAI, Azure OpenAI, Anthropic, Gemini, Ollama, and Bedrock.
-        The provider you choose determines which set of model names are valid for this agent.
-    model_name: The name of the model to use with the specified provider.
-        The value should be a model name type that matches the selected model_provider, such as `OpenAIModelName`,
-        `AnthropicModelName`, `GeminiModelName`, or `BedrockModelName`.
-        This field selects the exact large language model to run your requests with.
-    output_type: The type of the output data, used to validate the data returned by the model,
-        defaults to `str`.
-    instructions: Instructions to use for this agent, you can also register instructions via a function with
-        [`instructions`][pydantic_ai.Agent.instructions].
-    system_prompt: Static system prompts to use for this agent, you can also register system
-        prompts via a function with [`system_prompt`][pydantic_ai.Agent.system_prompt].
-    deps_type: The type used for dependency injection, this parameter exists solely to allow you to fully
-        parameterize the agent, and therefore get the best out of static type checking.
-        If you're not using deps, but want type checking to pass, you can set `deps=None` to satisfy Pyright
-        or add a type hint `: Agent[None, <return type>]`.
-    name: The name of the agent, used for logging. If `None`, we try to infer the agent name from the call frame
-        when the agent is first run.
-    model_settings: Optional model request settings to use for this agent's runs, by default.
-    retries: The default number of retries to allow before raising an error.
-    output_retries: The maximum number of retries to allow for result validation, defaults to `retries`.
-    tools: Tools to register with the agent, you can also register tools via the decorators
-        [`@agent.tool`][pydantic_ai.Agent.tool] and [`@agent.tool_plain`][pydantic_ai.Agent.tool_plain].
-    prepare_tools: custom method to prepare the tool definition of all tools for each step.
-        This is useful if you want to customize the definition of multiple tools or you want to register
-        a subset of tools for a given step. See [`ToolsPrepareFunc`][pydantic_ai.tools.ToolsPrepareFunc]
-    mcp_servers: MCP servers to register with the agent. You should register a [`MCPServer`][pydantic_ai.mcp.MCPServer]
-        for each server you want the agent to connect to.
-    instrument: Set to True to automatically instrument with OpenTelemetry,
-        which will use Logfire if it's configured.
-        Set to an instance of [`InstrumentationSettings`][pydantic_ai.agent.InstrumentationSettings] to customize.
-        If this isn't set, then the last value set by
-        [`Agent.instrument_all()`][pydantic_ai.Agent.instrument_all]
-        will be used, which defaults to False.
-        See the [Debugging and Monitoring guide](https://ai.pydantic.dev/logfire/) for more info.
+
+    Attributes:
+        model_provider: Specifies which model provider to use for this agent.
+            Supported providers include OpenAI, Azure OpenAI, Anthropic, Gemini, Ollama, and Bedrock.
+            The provider you choose determines which set of model names are valid for this agent.
+        model_name: The name of the model to use with the specified provider.
+            The value should be a model name type that matches the selected model_provider, such as `OpenAIModelName`,
+            `AnthropicModelName`, `GeminiModelName`, or `BedrockModelName`.
+            This field selects the exact large language model to run your requests with.
+        output_type: The type of the output data, used to validate the data returned by the model,
+            defaults to `str`.
+        instructions: Instructions to use for this agent, you can also register instructions via a function with
+            [`instructions`][pydantic_ai.Agent.instructions].
+        system_prompt: Static system prompts to use for this agent, you can also register system
+            prompts via a function with [`system_prompt`][pydantic_ai.Agent.system_prompt].
+        deps_type: The type used for dependency injection, this parameter exists solely to allow you to fully
+            parameterize the agent, and therefore get the best out of static type checking.
+            If you're not using deps, but want type checking to pass, you can set `deps=None` to satisfy Pyright
+            or add a type hint `: Agent[None, <return type>]`.
+        name: The name of the agent, used for logging. If `None`, we try to infer the agent name from the call frame
+            when the agent is first run.
+        model_settings: Optional model request settings to use for this agent's runs, by default.
+        retries: The default number of retries to allow before raising an error.
+        output_retries: The maximum number of retries to allow for result validation, defaults to `retries`.
+        tools: Tools to register with the agent, you can also register tools via the decorators
+            [`@agent.tool`][pydantic_ai.Agent.tool] and [`@agent.tool_plain`][pydantic_ai.Agent.tool_plain].
+        prepare_tools: custom method to prepare the tool definition of all tools for each step.
+            This is useful if you want to customize the definition of multiple tools or you want to register
+            a subset of tools for a given step. See [`ToolsPrepareFunc`][pydantic_ai.tools.ToolsPrepareFunc]
+        mcp_servers: MCP servers to register with the agent. You should register a [`MCPServer`][pydantic_ai.mcp.MCPServer]
+            for each server you want the agent to connect to.
+        instrument: Set to True to automatically instrument with OpenTelemetry,
+            which will use Logfire if it's configured.
+            Set to an instance of [`InstrumentationSettings`][pydantic_ai.agent.InstrumentationSettings] to customize.
+            If this isn't set, then the last value set by
+            [`Agent.instrument_all()`][pydantic_ai.Agent.instrument_all]
+            will be used, which defaults to False.
+            See the [Debugging and Monitoring guide](https://ai.pydantic.dev/logfire/) for more info.
     """
 
     model_provider: ModelProvider
@@ -93,7 +95,6 @@ class AgentConfig:
     retries: int = 1
     output_retries: int | None = None
     tools: Sequence[Tool[AgentDepsT] | ToolFuncEither[AgentDepsT, ...]] = ()
-    prepare_tools: ToolsPrepareFunc[AgentDepsT] | None = None
     mcp_servers: Sequence[MCPServer] = ()
     instrument: InstrumentationSettings | bool | None = None
 
@@ -121,7 +122,6 @@ class AgentNode(Node, ABC):
             retries=agent_wrapper.retries,
             output_retries=agent_wrapper.output_retries,
             tools=agent_wrapper.tools,
-            prepare_tools=agent_wrapper.prepare_tools,
             mcp_servers=agent_wrapper.mcp_servers,
             instrument=agent_wrapper.instrument,
         )
@@ -131,7 +131,7 @@ class AgentNode(Node, ABC):
         pass
 
     @abstractmethod
-    def process(self, task_context: TaskContext) -> TaskContext:
+    async def process(self, task_context: TaskContext) -> TaskContext:
         pass
 
     def __get_model_instance(self, provider: ModelProvider, model_name: str) -> Model:
