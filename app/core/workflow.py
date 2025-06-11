@@ -103,8 +103,18 @@ class Workflow(ABC):
         return node_class()
 
     def run(self, event: Any) -> TaskContext:
-        """Async wrapper for running the workflow for a given event."""
+        """Executes the workflow for a given event.
+
+        Use this when you want to run the workflow in a new event loop for example in a Celery background task, or a plain Python script.
+        """
         return asyncio.run(self.__run(event))
+
+    async def run_async(self, event: Any) -> TaskContext:
+        """Executes the workflow for a given event.
+
+        Use this when you want to run the workflow in an active event loop for example in a FastAPI endpoint, or Jupyter Notebook.
+        """
+        return await self.__run(event)
 
     async def __run(self, event: Any) -> TaskContext:
         """Executes the workflow for a given event.

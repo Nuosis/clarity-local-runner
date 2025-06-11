@@ -1,9 +1,9 @@
 from contextlib import contextmanager
 
-from worker.config import celery_app
 from database.event import Event
 from database.repository import GenericRepository
 from database.session import db_session
+from worker.config import celery_app
 from workflows.workflow_registry import WorkflowRegistry
 
 """
