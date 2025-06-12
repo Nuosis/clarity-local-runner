@@ -14,14 +14,6 @@ class ConcurrentNode(Node, ABC):
     using asyncio.gather. This ensures that I/O-bound operations can proceed in parallel
     without blocking the main thread or event loop.
 
-    When to use:
-    - Use ConcurrentNode when running the workflow in the main application, where the event loop is active
-      (for example, in a FastAPI app or a CLI tool).
-    - It is also perfectly fine to use ConcurrentNode within Celery tasks — Celery runs the task in a worker process,
-      and asyncio code will execute efficiently in that context.
-    - It is especially suited for workflows that consist mostly of async I/O operations (e.g. network calls, database access).
-    - It will not block other processes.
-
     Subclasses must implement the `process` method to define the specific logic of the concurrent node.
     """
 
