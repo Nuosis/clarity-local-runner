@@ -82,7 +82,7 @@ class {self.workflow_name_camel_case}Workflow(Workflow):
                 node=InitialNode,
                 connections=[],
                 description="",
-                parallel_nodes=[],
+                concurrent_nodes=[],
             ),
         ],
     )
