@@ -24,7 +24,7 @@ class NodeConfig(BaseModel):
         connections: List of Node classes this node can connect to
         is_router: Flag indicating if this node performs routing logic
         description: Optional description of the node's purpose
-        parallel_nodes: Optional list of Node classes that can run in parallel
+        concurrent_nodes: Optional list of Node classes that can run concurrently
 
     Example:
         config = NodeConfig(
@@ -32,7 +32,7 @@ class NodeConfig(BaseModel):
             connections=[RouterNode],
             is_router=False,
             description="Analyzes incoming requests"
-            parallel_nodes=[FilterContentGuardrailNode, FilterSQLInjectionGuardrailNode]
+            concurrent_nodes=[FilterContentGuardrailNode, FilterSQLInjectionGuardrailNode]
         )
     """
 
@@ -40,7 +40,7 @@ class NodeConfig(BaseModel):
     connections: List[Type[Node]] = Field(default_factory=list)
     is_router: bool = False
     description: Optional[str] = None
-    parallel_nodes: Optional[List[Type[Node]]] = Field(default_factory=list)
+    concurrent_nodes: Optional[List[Type[Node]]] = Field(default_factory=list)
 
 
 class WorkflowSchema(BaseModel):
