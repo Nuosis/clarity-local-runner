@@ -2,14 +2,17 @@ import logging
 import sys
 from pathlib import Path
 
-logging.basicConfig(level=logging.INFO)
 
-project_root = Path(__file__).parent.parent
-sys.path.append(str(project_root / "app"))
-sys.path.append(str(project_root))
+sys.path.append(str(Path(__file__).parent.parent / "app"))
+sys.path.append(str(Path(__file__).parent.parent))
+
+import nest_asyncio
+from workflows.workflow_registry import WorkflowRegistry
 
 from playground.utils.event_loader import EventLoader
-from workflows.workflow_registry import WorkflowRegistry
+
+logging.basicConfig(level=logging.INFO)
+nest_asyncio.apply()
 
 """
 This playground is used to test the WorkflowRegistry and the workflows themselves.
