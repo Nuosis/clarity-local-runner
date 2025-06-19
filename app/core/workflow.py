@@ -137,6 +137,9 @@ class Workflow(ABC):
         current_node_class = self.workflow_schema.start
 
         while current_node_class:
+            if task_context.should_stop:
+                logging.info("Stopping workflow execution")
+                break
             current_node = self.nodes[current_node_class].node
             with self.node_context(current_node_class.__name__):
                 if not issubclass(current_node, BaseRouter):
