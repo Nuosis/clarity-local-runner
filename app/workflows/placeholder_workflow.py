@@ -14,7 +14,6 @@ class PlaceholderWorkflow(Workflow):
                 node=InitialNode,
                 connections=[],
                 description="",
-                parallel_nodes=[],
             ),
         ],
     )
