@@ -139,7 +139,8 @@ class Workflow(ABC):
         while current_node_class:
             current_node = self.nodes[current_node_class].node
             with self.node_context(current_node_class.__name__):
-                task_context = await current_node().process(task_context)
+                if not issubclass(current_node, BaseRouter):
+                    task_context = await current_node().process(task_context)
 
             current_node_class = await self._get_next_node_class(
                 current_node_class, task_context

@@ -26,17 +26,7 @@ class BaseRouter(Node):
     """
 
     async def process(self, task_context: TaskContext) -> TaskContext:
-        """Processes the routing logic and updates task context.
-
-        Args:
-            task_context: Current task execution context
-
-        Returns:
-            Updated TaskContext with routing decision recorded
-        """
-        next_node = self.route(task_context)
-        task_context.nodes[self.node_name] = {"next_node": next_node.node_name}
-        return task_context
+        pass
 
     def route(self, task_context: TaskContext) -> Node:
         """Determines the next node based on routing rules.
