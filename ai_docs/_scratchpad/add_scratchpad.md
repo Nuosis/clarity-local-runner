@@ -1,0 +1,35 @@
+
+- Context loaded: PRD (detailed), Project Charter (detailed), ADD (empty), WBS (empty)
+- Stripe policy: Stripe is single source of truth for payments; store only Stripe IDs; live queries (confirmed)
+- MVP scope: fixed weekly 30-min slots, 1 slot/student, admin+parent UIs, attendance/no-shows, make-ups for Semester/Yearly
+- Auth: Supabase Auth for parents; Admin elevated
+- Tech: FastAPI, Postgres, Stripe, Hetzner+Docker; observability minimal logs
+- Open item: finalize service boundaries, sync/async flows, error handling strategy, concurrency/locking model, email transport
+- Next: Confirm auth/identity architecture (Supabase vs internal Admin), and role mapping to DB entities
+- Auth decision: Unified identities in Supabase Auth with roles/claims (admin, parent)
+- Concurrency/locking: choose simplest — Postgres transactional locking (SELECT ... FOR UPDATE) with single authoritative write path; no Redis for MVP
+- Email templating: In-repo Jinja templates; send raw HTML via Mailjet API
+- Parent UI: Separate SPA (React/Vite) consuming FastAPI APIs
+- Data model: Postgres tables — Payee, Student, Teacher, Instrument, Timeslot, Enrollment, Attendance, MakeUpRecord, Semester
+- Payment linkage: Store only Stripe IDs on Student/Enrollment; Stripe is source of truth
+- Concurrency: Use Postgres transactional locking (SELECT ... FOR UPDATE) for atomic booking
+- Observability: Add EmailLog table (status, provider_id, template, recipient, metadata)
+- Supabase roles: MVP = hardcode admin emails in config; all others = parent; replace with proper roles later
+- Admin dashboard P0: Today’s lessons (attendance/no-show); Provisional bookings aging; Recent Stripe payment status feed
+- Stripe: Source of truth; only store Stripe IDs; live queries
+- Auth identities: Unified in Supabase; roles via MVP hardcoded admin email allowlist
+- Concurrency: Postgres transactional locking (SELECT ... FOR UPDATE); single authoritative write path
+- Email: Mailjet; in-repo Jinja templates; send raw HTML via API
+- Parent UI: Separate SPA (React/Vite) consuming FastAPI APIs
+- Backend topology: Follow existing codebase — single FastAPI API + Celery workers; quick interactions via API/services; longer flows via Celery/workflows
+- Data model (MVP): Payee, Student, Teacher, Instrument, Timeslot, Enrollment, Attendance, MakeUpRecord, Semester; linkage via Stripe IDs; add EmailLog
+- Dashboard P0: Today’s lessons (attendance/no-show); Provisional bookings aging; Stripe payment status feed
+- SPA auth flow: Supabase login → backend verifies Supabase JWT → backend issues own session token for API usage
+- Async vs Sync: Async (Celery) — emails, all Stripe ops, provisional expiry checks; Sync — slot lock + enrollment write
+- Stripe webhooks: customer.created, payment_method.attached, invoice.payment_failed, invoice.payment_succeeded, customer.subscription.created/updated/deleted; failures → log, retry w/backoff, admin alert
+- Celery broker/backend: Redis for broker; Postgres as result backend (persistence)
+- Retries: Exponential backoff (2^n up to 5); on final failure → dead-letter table + Admin alert
+- Next: Define service endpoints and request/response contracts for Admin and Parent flows; outline DB schema fields per entity; sequence diagrams for booking (happy path/failure); security model for backend session token lifecycle
+- Backend session token: HS256 JWT, 2h expiry; refresh endpoint issues new backend JWT upon valid Supabase JWT
+- Parent booking sequencing: API locks slot and creates provisional Enrollment → returns 202 with tracking ID; SPA polls status endpoint; Celery performs all Stripe + emails; on completion Celery marks Enrollment active or leaves provisional with reason
+- ADD generated: ai_docs/context/core_docs/add.md — includes endpoints list, DB schema fields, booking/webhook flows, security, async/retries/DLQ, deployment/testing
