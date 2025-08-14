@@ -1,6 +1,5 @@
 
 - Context loaded: PRD (detailed), Project Charter (detailed), ADD (empty), WBS (empty)
-- Stripe policy: Stripe is single source of truth for payments; store only Stripe IDs; live queries (confirmed)
 - MVP scope: fixed weekly 30-min slots, 1 slot/student, admin+parent UIs, attendance/no-shows, make-ups for Semester/Yearly
 - Auth: Supabase Auth for parents; Admin elevated
 - Tech: FastAPI, Postgres, Stripe, Hetzner+Docker; observability minimal logs

@@ -1,213 +1,120 @@
-# Cedar Heights Music Academy - Project Charter
+MVP READY
+# SEWP Chatbot — Project Charter
 
-## Executive Summary
+## Executive summary
+- Vision: Chatbot answering from GitHub repo docs via Retrieval-Augmented Generation (RAG) with automatic reindexing when docs change.
+- Primary value: Evidence-backed, up-to-date answers to planning questions (“How will SEWP …?”, “Have we thought about …?”) for SEWP staff and leadership.
+- Repo: Nuosis/SEWP (GitHub). Access via token/secret in environment.
+- MVP: 1‑day build focused on single‑pass CLI ingest and a /chat endpoint with citations; logging kept minimal; evaluation node stubbed.
 
-Cedar Heights Music Academy is a new music school in British Columbia, Canada, starting operations with a focus on individual music instruction. The school requires a simple, stable backend system to manage student enrollment, lesson scheduling, and payment processing. This project will deliver a minimal viable product (MVP) within 2 weeks to enable immediate operations.
+## Objectives and success criteria
+- Objectives
+  - Provide authoritative answers grounded in the SEWP documentation.
+  - Enable quick pilot usage by staff/leadership with minimal setup.
+- KPIs
+  - Usefulness ≥ 90% (track thumbs up/down and “insufficient” rate per answer).
+  - Accuracy ≥ 95% based on citation coverage at the assertion level.
+- Instrumentation
+  - Track per-answer thumbs up/down and “insufficient” label.
+  - Final workflow node evaluates each assertion: assertions must cite a retrieved passage; uncited assertions are counted inaccurate; valid deduction/induction annotated, otherwise flagged “suspect”.
 
-## Project Vision
+## Stakeholders
+- Stakeholder roles provided: Developer, Owner, MCA, COO, Admin, Sales, Practitioner.
+- Responsibility mapping: intentionally deferred for MVP; will capture as RACI in a later iteration.
 
-To create a streamlined, user-friendly backend system that enables Cedar Heights Music Academy to efficiently manage their music education services while maintaining simplicity and stability over complex features.
+## Users and high‑level use cases
+- Primary users: SEWP staff and leadership.
+- Core use cases:
+  - Ask planning/architecture/process questions and receive evidence-backed answers with inline citations.
+  - Mark answers as “insufficient” when the corpus does not support an answer.
+  - View minimal logs of questions/answers for review (future admin view).
 
-## Business Objectives
+## Scope
+- In scope (Day 1 MVP):
+  - Ingest documents under [ai_docs/context/](ai_docs/context/).
+  - Allowed file types: .md, .txt, .pdf. Exclude code files.
+  - /chat endpoint with top_k retrieval and inline citations.
+  - Minimal logging and evaluation node stub that records required citations without strict scoring.
+- Out of scope (Day 1):
+  - GitHub webhook automation (planned for subsequent iteration).
+  - Full accuracy scoring, admin UI, and complex dashboards.
 
-### Primary Goals
-1. **Enable Digital Operations**: Transition from manual processes to a digital platform for managing the music school
-2. **Streamline Administration**: Reduce administrative overhead through automation of scheduling, billing, and enrollment
-3. **Ensure Payment Security**: Implement secure payment processing through Stripe integration
-4. **Support Growth**: Build a foundation that can accommodate controlled growth (1-2 teachers, up to 50 students in Year 1)
+## Architecture overview
+- Foundation: GenAI Launchpad workflow architecture; see [ai_docs/context/guides/genai_launchpad_workflow_architecture.md](ai_docs/context/guides/genai_launchpad_workflow_architecture.md).
+- Major components:
+  - API service: [app/api/router.py](app/api/router.py).
+  - Worker and tasks: [app/worker/tasks.py](app/worker/tasks.py).
+  - Workflow engine and schema: [app/core/workflow.py](app/core/workflow.py), [app/core/schema.py](app/core/schema.py).
+  - Node base/agent patterns: [app/core/nodes/base.py](app/core/nodes/base.py), [app/core/nodes/agent.py](app/core/nodes/agent.py).
+- Execution model:
+  - Day 1: CLI ingest writes embeddings to pgvector; /chat performs retrieval and answer composition with inline citations.
+  - Later: Event-driven ingestion via GitHub App webhook to /webhook, enqueueing reindex tasks to the worker.
 
-### Success Metrics
-- Successfully enroll and manage 20+ students within first month
-- Process all payments electronically through the system
-- Reduce administrative time by 50% compared to manual processes
-- Achieve 95% uptime for critical operations
+## Data ingestion and parsing (Docling)
+- Library: Docling (pip package: “docling”) for .md/.txt/.pdf.
+- Behavior:
+  - Preserve headings as metadata; include basic images/tables (as available).
+  - Keep fenced/indented code blocks as plain text within chunks.
+  - Exclude source code files from ingestion.
+- CLI ingest: Single-pass ingest over [ai_docs/context/](ai_docs/context/) with idempotent upsert semantics.
 
-## Stakeholder Analysis
+## Embeddings and vector store
+- Vector store: Supabase Postgres with pgvector, schema: sewp_context.
+- Embeddings: OpenAI text-embedding-3-small.
+- Chunking: 800-token chunks with 15% overlap.
+- Stored metadata per chunk: file path, heading chain, commit SHA, passage start/end offsets, content type (md/txt/pdf).
 
-### Primary Stakeholders
-- **Teacher/Owner**: Primary system user managing all operations initially
-- **Parents**: Will access system to view payments, make payments, and register children (Phase 2)
-- **Students**: Indirect beneficiaries receiving music instruction
+## Retrieval and answer generation
+- Default retrieval: top_k = 6.
+- Inline citations enabled with payload: file path, heading chain, commit SHA, start/end offsets; passage_size ≈ 1200 chars.
+- Answer composer requirements:
+  - Each assertion should reference at least one citation from retrieved passages.
+  - Deductions/inductions must be explicitly annotated; otherwise assertions are marked “suspect”.
 
-### User Roles
-1. **Phase 1**: Single admin user (Teacher/Owner) with full system access
-2. **Phase 2**: Parent portal for payment and enrollment management
+## Interfaces and endpoints
+- Day 1 MVP:
+  - CLI: one-shot ingest for [ai_docs/context/](ai_docs/context/).
+  - HTTP: /chat, /health.
+- Future endpoints (post-MVP):
+  - /webhook for GitHub App push events (default branch) to drive incremental reindex.
+  - /feedback or equivalent to capture thumbs up/down and insufficient labels.
+- Auth (M2M):
+  - Header: X-SEWP-Secret; env var: SEWP_M2M_SECRET; constant-time comparison; 401 on mismatch.
 
-## Project Scope
+## Data governance and compliance
+- Classification: Internal-only; no sensitive PII expected.
+- Repo access scope: Read-only to documentation paths (TBD exact path constraints beyond [ai_docs/context/](ai_docs/context/)).
+- Retention: TBD for logs/Q&A and embeddings (proposed: logs/Q&A 90 days; embeddings indefinite).
+- Encryption: TLS in transit; Supabase encryption at rest assumed.
 
-### In Scope - MVP Features
+## Timeline and milestones
+- 1‑day MVP deliverables:
+  - Ingestion CLI processes [ai_docs/context/](ai_docs/context/) into sewp_context.pgvector with Docling parsing.
+  - /chat returns answers with inline citations and retrieved passage payloads; top_k=6.
+  - Minimal logging of questions/answers plus “insufficient” flag; evaluation node stub records citation requirements.
+  - Health check endpoint available; env-based M2M protection applied where required.
+- Acceptance tests:
+  - Ask three representative planning questions; answers include at least one inline citation per assertion and link back to the correct passage.
+  - “Insufficient” flow marks the record and is visible in logs.
+  - Ingest is repeatable without duplicating vectors (upsert semantics).
 
-#### 1. Student Enrollment & Registration
-- Manage student profiles linked to payees (parents or contracting schools)
-- Track basic student information and emergency contacts
-- Assign students to teachers and instruments
+## Risks and mitigations
+- PDF parsing variability (Docling): mitigate by focusing on Markdown/TXT first; fall back to simplified text extraction if needed.
+- Citation precision: ensure chunk-level offsets and heading chains are stored; consider smaller overlap tuning if hallucinations rise.
+- Embedding vendor dependency/cost: start with text-embedding-3-small; leave model configurable via env.
+- Compressed timeline: constrain scope (no webhook Day 1) and use existing GenAI Launchpad patterns to accelerate.
+- Security of secrets: use container-mounted .env; never commit secrets; apply constant-time compare for M2M header.
 
-#### 2. Lesson Scheduling
-- Simplified day-of-week + timeslot scheduling system
-- Teacher availability management
-- Parent-accessible booking for available slots
-- Support for 30-minute weekly lessons
+## Open TBDs
+- Exact repo access scope beyond [ai_docs/context/](ai_docs/context/).
+- Retention windows for logs/Q&A and embeddings.
+- Responsibility mapping for stakeholders (RACI).
+- Competitive landscape and differentiation summary.
+- Detailed deployment profile reference (noted as “already in code base”).
 
-#### 3. Payment & Billing
-- Checkbook-style bookkeeping system
-- Stripe integration for payment processing
-- Support for multiple payment terms:
-  - Yearly (school year with monthly installments)
-  - Semester (lump sum)
-  - Monthly (month-to-month)
-- Automated invoice and receipt generation
-
-### Out of Scope
-- Group lessons or workshops
-- Complex calendar integration
-- Student progress tracking or grading
-- Recital/event management
-- Practice room booking
-- Multi-location support
-
-## Technical Architecture
-
-### Technology Stack
-- **Backend Framework**: Python with FastAPI (existing codebase in /app/)
-- **Database**: PostgreSQL
-- **Payment Processing**: Stripe API
-- **Authentication**: JWT-based authentication
-- **Hosting**: Hetzner with Docker containers
-- **Architecture Pattern**: Optional event-driven using GenAI Launchpad workflow
-
-### Data Architecture
-
-The system will implement a normalized relational database structure with the following core entities:
-
-#### Contact Information Tables
-- **Email**: Centralized email storage with verification status
-- **Phone**: Phone numbers with type classification
-- **Address**: Full address details for Canadian format
-
-#### Business Entities
-- **Payee**: Parents or contracting schools responsible for payment
-- **Student**: Individual students linked to payees
-- **Teacher**: Instructors with credentials and rates
-- **Instruments**: Available instruments (piano, guitar, drums, bass)
-- **Availability**: Teacher schedule slots
-- **Service_Records**: Active lesson enrollments
-- **Payment_Records**: Transaction history
-- **Invoices**: Billing records
-
-#### Relationship Tables
-- Payee_Emails, Payee_Phones, Payee_Addresses
-- Teacher_Emails, Teacher_Phones
-- Teacher_Instruments
-
-## Compliance & Security
-
-### Regulatory Requirements
-- **PIPEDA**: Federal privacy law compliance
-- **BC PIPA**: Provincial privacy law compliance
-- **PCI DSS**: Handled through Stripe (no local card storage)
-
-### Security Measures
-- SSL/TLS encryption for all data transmission
-- Encrypted database for personal information
-- Parental consent workflow for minors
-- Comprehensive audit trail for data access
-- Clear privacy policy and terms of service
-- Defined data retention policies
-
-## Project Constraints
-
-### Timeline
-- **MVP Delivery**: 2 weeks from project start
-- **Approach**: Minimal viable features with post-launch iteration
-
-### Technical Constraints
-- Optimize for small load (1-5 teachers, 20-100 students)
-- Prioritize simplicity and stability over feature complexity
-- Leverage existing FastAPI project structure
-
-### Resource Constraints
-- Single developer/owner initially
-- Limited budget requiring cost-effective solutions
-- Must be maintainable by small team
-
-## Risk Assessment
-
-### High Priority Risks
-1. **Timeline Risk**: 2-week deadline is aggressive
-   - *Mitigation*: Focus on absolute minimum features, defer nice-to-haves
-   
-2. **Payment Integration**: Stripe setup and testing complexity
-   - *Mitigation*: Use Stripe's well-documented APIs and test mode
-
-3. **Data Privacy**: Handling minor's information
-   - *Mitigation*: Implement proper consent workflows and encryption
-
-### Medium Priority Risks
-1. **Scalability**: System may need updates if growth exceeds expectations
-   - *Mitigation*: Design with clean architecture for future refactoring
-
-2. **User Adoption**: Parents may need training on system use
-   - *Mitigation*: Create simple, intuitive interfaces
-
-## Implementation Approach
-
-### Development Methodology
-- Agile/iterative development with daily progress reviews
-- Test-driven development for critical features
-- Continuous deployment via Docker
-
-### Phase 1 (Week 1)
-- Database schema implementation
-- Core API endpoints for CRUD operations
-- Teacher/Admin authentication
-- Basic enrollment management
-
-### Phase 2 (Week 2)
-- Stripe payment integration
-- Scheduling system
-- Invoice generation
-- Basic reporting
-- Deployment and testing
-
-### Post-Launch Iterations
-- Parent portal access
-- Enhanced scheduling features
-- Performance optimizations
-- Additional reporting capabilities
-
-## Success Criteria
-
-The project will be considered successful when:
-1. System can register and manage student enrollments
-2. Teachers can set availability and parents can book lessons
-3. Payments can be processed through Stripe
-4. System maintains 95% uptime
-5. Basic operations require no technical support
-
-## Next Steps
-
-1. **Immediate Actions**:
-   - Set up development environment
-   - Initialize database schema
-   - Configure Stripe test account
-   - Create project task breakdown
-
-2. **Stakeholder Actions**:
-   - Provide Stripe account credentials
-   - Confirm business rules and workflows
-   - Review and approve UI mockups
-
-3. **Technical Setup**:
-   - Configure Hetzner hosting environment
-   - Set up CI/CD pipeline
-   - Implement monitoring and logging
-
-## Approval
-
-This project charter establishes the foundation for the Cedar Heights Music Academy backend system. Upon approval, development will commence immediately to meet the 2-week delivery timeline.
-
----
-
-*Document Version*: 1.0  
-*Date*: 2025-08-10  
-*Status*: Pending Approval
+## Next steps
+- Finalize retention windows and repo scope constraints; update configs.
+- Implement CLI ingest command and DB migrations for sewp_context schema and pgvector tables.
+- Implement /chat endpoint response format with inline citations and assertion structure.
+- Wire minimal logging and evaluation stub; expose /health.
+- Prepare follow-on iteration to add GitHub App webhook and incremental reindex.

@@ -372,3 +372,6 @@ if error_condition:
 - **Debuggable**: Complete execution history in TaskContext
 
 This architecture enables building sophisticated AI workflows with clear separation of concerns, comprehensive validation, and flexible execution patterns suitable for production environments.
+
+## Example Implmentation 
+`/ai_docs/context/guides/workflow_example/`

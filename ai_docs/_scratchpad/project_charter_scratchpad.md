@@ -1,188 +1,42 @@
-# Cedar Heights Music Academy - Project Charter Scratchpad
 
-## Initial Requirements Captured
-- **Project Name:** Cedar Heights Music Academy Backend
-- **Scale:** Small music school
-  - 1-5 teachers
-  - 20-100 students
-- **Key Principle:** Simplicity and stability over complexity and robustness
-- **Focus:** Small-load optimization
-- **Status:** New school starting from scratch (no legacy systems)
-- **Instruments:** Piano, guitar, drums, and bass
-- **Lesson Format:** Individual one-on-one lessons only
-- **Payment Options:**
-  - Yearly (school year, paid monthly installments)
-  - Semester (lump sum payment)
-  - Monthly (month-to-month)
-- **Lesson Schedule:** 30-minute lessons, once per week
-- **Users:**
-  - Phase 1: Single user (Teacher/Owner)
-  - Phase 2: Parents (view payments, pay, signup children)
+## SEWP Chatbot — Project Charter Scratchpad (2025-08-12)
 
-## Core Features (MVP)
-- Student enrollment and registration management
-- Lesson scheduling (simplified day-of-week + timeslot system)
-  - Teacher sets availability slots
-  - Parents search/book available teaching slots
-- Payment tracking and billing
-  - Basic checkbook-style bookkeeping
-  - Stripe integration for payment processing
-  - Automated invoices/receipts generation
-  - Online payment acceptance
+- Vision: Chatbot answering from GitHub repo docs via RAG; reindex on doc changes via GitHub webhook. Repo: Nuosis/SEWP; .env token/secret.
+- Users/use-cases: SEWP staff &amp; leadership; planning Qs (“How will SEWP…”, “Have we thought about …”); all Qs tracked; answers can be marked “insufficient”.
+- Tech baseline: GenAI Launchpad; Supabase backend; Alembic migrations; Dockling for read/chunk/vectorize (to implement).
+- KPIs (90d): usefulness ≥90%; accuracy ≥95% (measurement method TBD).
+- Constraints: conform with GenAI; rapid MVP in 1–3 days.
 
-## Technical Stack
-- **Backend:** Python with FastAPI (already instantiated in /app/)
-- **Architecture:** GenAI Launchpad workflow architecture (event-driven optional)
-- **Database:** TBD (PostgreSQL likely for simplicity)
-- **Payment:** Stripe API
-- **Hosting:** Hetzner with Docker containers
-- **Authentication:** TBD (JWT likely)
+Open decisions/assumptions:
+- Corpus scope: included paths, exclusions; file types (md/mdx/pdf/code comments?).
+- Vector store: Supabase Postgres + pgvector? schema naming/permissions.
+- Embeddings: provider/model; chunk size/overlap; metadata (path, commit sha, headings).
+- Webhook: GitHub App vs PAT; events (push, PR); secret management; incremental reindex.
+- Interface: API-first vs minimal UI; auth (org-only); role permissions.
+- Feedback loop: “insufficient” labeling UX; storage; triage (issue creation?).
+- Accuracy measurement: gold Q/A set; sampling; acceptance thresholds.
+- Deployment: envs (dev/prod), hosting target.
+- Security: secret storage; repo access scope; PII not expected.
 
-## Timeline
-- **MVP Target:** 2 weeks (ASAP)
-- **Priority:** Speed to market with core functionality
-- **Approach:** Minimal viable features, iterate after launch
-
-## Compliance Requirements (BC, Canada)
-- **PIPEDA:** Personal Information Protection (consent for collection, secure storage)
-- **BC PIPA:** Personal Information Protection Act (British Columbia)
-- **Payment:** PCI DSS handled by Stripe (no card data stored locally)
-- **Minors:** Parental consent for students under 18
-- **Recommendations:**
-  - SSL/TLS for all data transmission
-  - Encrypted database for personal information
-  - Clear privacy policy and terms of service
-  - Audit trail for data access
-  - Data retention policy
-
-## Growth Expectations
-- **Year 1:** Stay small (1-2 teachers, under 50 students)
-- **Focus:** Prove the model, refine operations
-- **System Design:** Built for current scale, not over-engineered
-
-## Data Management Requirements
-
-### Core Entities
-
-#### Payee (Parent/Contracting School)
-- payee_id (PK)
-- name
-- type (individual/organization)
-- stripe_customer_id
-
-#### Email
-- email_id (PK)
-- email_address
-- is_verified
-- is_primary
-
-#### Phone
-- phone_id (PK)
-- phone_number
-- phone_type (mobile/home/work)
-- is_primary
-
-#### Address
-- address_id (PK)
-- street_line_1
-- street_line_2
-- city
-- province
-- postal_code
-- country
-
-#### Payee_Emails
-- payee_id (FK)
-- email_id (FK)
-
-#### Payee_Phones
-- payee_id (FK)
-- phone_id (FK)
-
-#### Payee_Addresses
-- payee_id (FK)
-- address_id (FK)
-
-#### Student
-- student_id (PK)
-- payee_id (FK)
-- first_name
-- last_name
-- emergency_contact_name
-- emergency_contact_phone
-- emergency_contact_relationship
-
-#### Teacher
-- teacher_id (PK)
-- first_name
-- last_name
-- credentials
-- hourly_rate
-
-#### Teacher_Emails
-- teacher_id (FK)
-- email_id (FK)
-
-#### Teacher_Phones
-- teacher_id (FK)
-- phone_id (FK)
-
-#### Instruments
-- instrument_id (PK)
-- name (piano/guitar/drums/bass)
-
-#### Teacher_Instruments
-- teacher_id (FK)
-- instrument_id (FK)
-
-#### Availability
-- availability_id (PK)
-- teacher_id (FK)
-- day_of_week
-- time_slot
-- is_available
-
-#### Service_Records (Lessons)
-- service_id (PK)
-- student_id (FK)
-- teacher_id (FK)
-- availability_id (FK)
-- instrument_id (FK)
-- payment_term (monthly/semester/yearly)
-- start_date
-- end_date
-- status (active/completed/cancelled)
-
-#### Payment_Records
-- payment_id (PK)
-- payee_id (FK)
-- service_id (FK)
-- amount
-- stripe_transaction_id
-- payment_date
-- status
-
-#### Invoices
-- invoice_id (PK)
-- payee_id (FK)
-- amount
-- due_date
-- paid_date
-- stripe_invoice_id
-
-## Areas to Explore
-- [x] Core business objectives
-- [x] User roles and permissions
-- [x] Key features needed
-- [x] Technical constraints
-- [x] Timeline and milestones
-- [x] Compliance requirements
-- [x] Growth considerations
-- [x] Data management requirements
-
-## Questions Queue
-- Business model and revenue streams
-- Core workflows (enrollment, scheduling, payments)
-- Communication needs
-- Reporting requirements
-- Mobile/web access needs
+Proposed MVP (1–3 days):
+- Ingest selected repo paths; chunk+embed; store in Supabase pgvector.
+- /chat endpoint with top-k citations; log Q/A; mark “insufficient”.
+- GitHub webhook to reindex changed files only.
+- Minimal admin/reporting (query log + export).
+- Decision: Ingestion scope — include [ai_docs/context/](ai_docs/context/); extensions: .md, .txt, .pdf; exclude code files.
+- Pending: Choose parsing lib (Docling vs Unstructured) and PDF handling specifics.
+- Decision: Parsing/ingestion — Docling (pip: docling) for .md/.txt/.pdf; keep headings as metadata; include basic images/tables where available.
+- Pending: Markdown fenced code blocks — strip or keep? (recommend strip in MVP to reduce noise)
+- Decision: Vector store — Supabase Postgres + pgvector; schema: sewp_context.
+- Decision: Markdown code blocks — keep as plain text in chunks (no syntax-highlighting metadata).
+- Decision: Embeddings/chunking — OpenAI text-embedding-3-small; chunk_size=800 tokens; overlap=15%.
+- Decision: Webhook/infra — GitHub App; event: push on default branch; incremental reindex (changed files only); secrets in container .env (mounted).
+- Decision: API/auth — API-only EDA: /webhook → store in event table → enqueue worker → execute workflow → persist to event.result; all endpoints protected via M2M shared secret (in container .env). Pending: header name and env var key for the shared secret.
+- Decision: M2M auth details — Header: X-SEWP-Secret; Env var: SEWP_M2M_SECRET; constant-time compare; 401 on mismatch; applied to all protected endpoints.
+- Decision: Accuracy evaluation — Final workflow node validates each answer’s assertions against retrieved passages; each assertion must include citation (source doc + line/paragraph). Uncited assertions counted as inaccurate. Valid deduction/induction annotated; otherwise flagged “suspect”.
+- Decision: Usefulness metric — Track thumbs up/down and “insufficient” rate per answer.
+- Stakeholders (list provided): Developer, Owner, MCA, COO, Admin, Sales, Practitioner. Pending: map each to responsibility (sponsor, decision-maker, eng owner, data owner, security reviewer, pilot users, etc.).
+- Decision: Timeline — 1‑day MVP: single‑pass CLI ingest + /chat with citations; no webhook; minimal logging; eval node stub (records citations; no strict scoring).
+- Decision: Retrieval — top_k=6 with inline citations; payload = file path, heading chain, commit SHA, passage start/end offsets; passage_size≈1200 chars.
+- Decision: Data governance — Internal-only; no sensitive PII.
+- Pending: Repo scope confirmation (read-only to [ai_docs/context/](ai_docs/context/:1)?), retention windows for logs/Q&amp;A and embeddings, and encryption notes (TLS in transit; Supabase at-rest assumed).
