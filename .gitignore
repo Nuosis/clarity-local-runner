@@ -95,3 +95,5 @@ app/alembic/versions/*
 
 # Launchpad playground
 playground/*.png
+
+app/google-service-account.json
