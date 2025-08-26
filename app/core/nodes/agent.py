@@ -6,21 +6,21 @@ from typing import Type, Optional, Union, Any, Sequence
 
 import boto3
 from dotenv import load_dotenv
+from google.oauth2 import service_account
 from httpx import AsyncClient
-from openai import AsyncAzureOpenAI
 from pydantic import BaseModel
 from pydantic_ai import Agent, Tool
 from pydantic_ai.mcp import MCPServer
 from pydantic_ai.models import Model
 from pydantic_ai.models.anthropic import AnthropicModel, AnthropicModelName
 from pydantic_ai.models.bedrock import BedrockConverseModel, BedrockModelName
-from pydantic_ai.models.gemini import GeminiModel, GeminiModelName
+from pydantic_ai.models.gemini import GeminiModelName
+from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.models.instrumented import InstrumentationSettings
 from pydantic_ai.models.openai import OpenAIModel, OpenAIModelName
 from pydantic_ai.providers.anthropic import AnthropicProvider
 from pydantic_ai.providers.bedrock import BedrockProvider
-from pydantic_ai.providers.google_gla import GoogleGLAProvider
-from pydantic_ai.providers.openai import OpenAIProvider
+from pydantic_ai.providers.google import GoogleProvider
 from pydantic_ai.settings import ModelSettings
 from pydantic_ai.tools import AgentDepsT, ToolFuncEither
 
@@ -34,9 +34,10 @@ class ModelProvider(str, Enum):
     OPENAI = "openai"
     AZURE_OPENAI = "azure_openai"
     ANTHROPIC = "anthropic"
-    GEMINI = "gemini"
     OLLAMA = "ollama"
     BEDROCK = "bedrock"
+    GOOGLE_GEMINI = "google"
+    GOOGLE_VERTEX_AI = "google_vertex_ai"
 
 
 @dataclass
@@ -139,30 +140,20 @@ class AgentNode(Node, ABC):
             case provider.OPENAI.value:
                 return self.__get_openai_model(model_name)
             case provider.AZURE_OPENAI.value:
-                return self.__get_azure_openai_model(model_name)
+                return self.__get_openai_model(model_name)
             case provider.ANTHROPIC.value:
                 return self.__get_anthropic_model(model_name)
-            case provider.GEMINI.value:
-                return self.__get_gemini_model(model_name)
             case provider.OLLAMA.value:
                 return self.__get_ollama_model(model_name)
             case provider.BEDROCK.value:
                 return self.__get_bedrock_model(model_name)
-            case _:
-                return self.__get_openai_model("gpt-4.1")
+            case provider.GOOGLE_GEMINI.value:
+                return self.__get_google_gemini_model(model_name)
+            case provider.GOOGLE_VERTEX_AI.value:
+                return self.__get_google_vertex_ai_model(model_name)
 
     def __get_openai_model(self, model_name: OpenAIModelName) -> Model:
-        return OpenAIModel(
-            model_name,
-            provider=OpenAIProvider(http_client=self.__async_client),
-        )
-
-    def __get_azure_openai_model(self, model_name: OpenAIModelName) -> Model:
-        client = AsyncAzureOpenAI()
-        return OpenAIModel(
-            model_name,
-            provider=OpenAIProvider(openai_client=client),
-        )
+        return OpenAIModel(model_name=model_name)
 
     def __get_anthropic_model(self, model_name: AnthropicModelName) -> Model:
         return AnthropicModel(
@@ -170,20 +161,12 @@ class AgentNode(Node, ABC):
             provider=AnthropicProvider(http_client=self.__async_client),
         )
 
-    def __get_gemini_model(self, model_name: str) -> Model:
-        return GeminiModel(
-            model_name=model_name,
-            provider=GoogleGLAProvider(http_client=self.__async_client),
-        )
-
     def __get_ollama_model(self, model_name: str) -> Model:
         base_url = os.getenv("OLLAMA_BASE_URL")
         if not base_url:
             raise KeyError("OLLAMA_BASE_URL not set in .env")
 
-        return OpenAIModel(
-            model_name=model_name, provider=OpenAIProvider(base_url=base_url)
-        )
+        return OpenAIModel(model_name=model_name)
 
     def __get_bedrock_model(self, model_name: str) -> Model:
         aws_access_key_id = os.getenv("BEDROCK_AWS_ACCESS_KEY_ID")
@@ -199,4 +182,21 @@ class AgentNode(Node, ABC):
         return BedrockConverseModel(
             model_name=model_name,
             provider=BedrockProvider(bedrock_client=bedrock_client),
+        )
+
+    def __get_google_gemini_model(self, model_name: str) -> Model:
+        return GoogleModel(
+            model_name=model_name,
+            provider=GoogleProvider(),
+        )
+
+    def __get_google_vertex_ai_model(self, model_name: str) -> Model:
+        credentials = service_account.Credentials.from_service_account_file(
+            filename=os.getenv("GOOGLE_SERVICE_ACCOUNT_PATH"),
+            scopes=["https://www.googleapis.com/auth/cloud-platform"],
+        )
+        provider = GoogleProvider(credentials=credentials)
+        return GoogleModel(
+            model_name=model_name,
+            provider=provider,
         )
