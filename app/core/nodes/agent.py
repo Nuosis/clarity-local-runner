@@ -192,10 +192,10 @@ class AgentNode(Node, ABC):
 
     def __get_google_vertex_ai_model(self, model_name: str) -> Model:
         credentials = service_account.Credentials.from_service_account_file(
-            filename=os.getenv("GOOGLE_SERVICE_ACCOUNT_PATH"),
+            filename=os.getenv("GOOGLE_APPLICATION_CREDENTIALS"),
             scopes=["https://www.googleapis.com/auth/cloud-platform"],
         )
-        provider = GoogleProvider(credentials=credentials)
+        provider = GoogleProvider(credentials=credentials, location=os.getenv("GOOGLE_VERTEX_AI_LOCATION", "europe-west1"))
         return GoogleModel(
             model_name=model_name,
             provider=provider,
