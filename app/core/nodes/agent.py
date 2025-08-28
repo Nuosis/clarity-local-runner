@@ -8,6 +8,7 @@ import boto3
 from dotenv import load_dotenv
 from google.oauth2 import service_account
 from httpx import AsyncClient
+from openai import AsyncAzureOpenAI
 from pydantic import BaseModel
 from pydantic_ai import Agent, Tool
 from pydantic_ai.mcp import MCPServer
@@ -21,6 +22,7 @@ from pydantic_ai.models.openai import OpenAIModel, OpenAIModelName
 from pydantic_ai.providers.anthropic import AnthropicProvider
 from pydantic_ai.providers.bedrock import BedrockProvider
 from pydantic_ai.providers.google import GoogleProvider
+from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.settings import ModelSettings
 from pydantic_ai.tools import AgentDepsT, ToolFuncEither
 
@@ -140,7 +142,7 @@ class AgentNode(Node, ABC):
             case provider.OPENAI.value:
                 return self.__get_openai_model(model_name)
             case provider.AZURE_OPENAI.value:
-                return self.__get_openai_model(model_name)
+                return self.__get_azure_openai_model(model_name)
             case provider.ANTHROPIC.value:
                 return self.__get_anthropic_model(model_name)
             case provider.OLLAMA.value:
@@ -155,6 +157,15 @@ class AgentNode(Node, ABC):
     def __get_openai_model(self, model_name: OpenAIModelName) -> Model:
         return OpenAIModel(model_name=model_name)
 
+    def __get_azure_openai_model(self, model_name) -> Model:
+        client = AsyncAzureOpenAI(
+            api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2024-10-21")
+        )
+        return OpenAIModel(
+            model_name=model_name,
+            provider=OpenAIProvider(openai_client=client),
+        )
+
     def __get_anthropic_model(self, model_name: AnthropicModelName) -> Model:
         return AnthropicModel(
             model_name=model_name,
@@ -166,7 +177,9 @@ class AgentNode(Node, ABC):
         if not base_url:
             raise KeyError("OLLAMA_BASE_URL not set in .env")
 
-        return OpenAIModel(model_name=model_name)
+        return OpenAIModel(
+            model_name=model_name, provider=OpenAIProvider(base_url=base_url)
+        )
 
     def __get_bedrock_model(self, model_name: str) -> Model:
         aws_access_key_id = os.getenv("BEDROCK_AWS_ACCESS_KEY_ID")
@@ -195,7 +208,10 @@ class AgentNode(Node, ABC):
             filename=os.getenv("GOOGLE_APPLICATION_CREDENTIALS"),
             scopes=["https://www.googleapis.com/auth/cloud-platform"],
         )
-        provider = GoogleProvider(credentials=credentials, location=os.getenv("GOOGLE_VERTEX_AI_LOCATION", "europe-west1"))
+        provider = GoogleProvider(
+            credentials=credentials,
+            location=os.getenv("GOOGLE_VERTEX_AI_LOCATION", "europe-west1"),
+        )
         return GoogleModel(
             model_name=model_name,
             provider=provider,
