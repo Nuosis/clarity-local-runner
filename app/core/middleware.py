@@ -5,32 +5,33 @@ Middleware for Cedar Heights Music Academy API.
 import logging
 import time
 import uuid
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Optional
 
-from fastapi import Request, Response, status
+from fastapi import Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
-from schemas.common import APIResponse, ErrorDetail, RequestMetadata
+from schemas.common import APIResponse
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from .exceptions import (
-    AuthenticationError,
-    AuthorizationError,
-    BusinessRuleError,
+    # AuthenticationError,
+    # AuthorizationError,
+    # BusinessRuleError,
     CedarHeightsException,
-    ConflictError,
-    DatabaseError,
-    ExternalServiceError,
-    NotFoundError,
-    PaymentError,
-    RateLimitError,
-    SchedulingError,
-    WorkflowError,
+    # ConflictError,
+    # DatabaseError,
+    # ExternalServiceError,
+    # NotFoundError,
+    # PaymentError,
+    # RateLimitError,
+    # SchedulingError,
+    # WorkflowError,
 )
-from .exceptions import (
-    ValidationError as CustomValidationError,
-)
+
+# from .exceptions import (
+#     ValidationError as CustomValidationError,
+# )
 
 logger = logging.getLogger(__name__)
 
@@ -115,8 +116,8 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
         error_code: str,
         status_code: int,
         request_id: str,
-        details: dict = None,
-        field_errors: list = None,
+        details: Optional[dict] = None,
+        field_errors: Optional[list] = None,
     ) -> JSONResponse:
         """Create a standardized error response."""
 

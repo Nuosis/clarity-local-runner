@@ -11,6 +11,7 @@ from .endpoints import (
     payments,
     public,
     settings,
+    stripe_webhooks,
     students,
     teachers,
 )
@@ -40,3 +41,6 @@ api_router.include_router(academic.router, prefix="/academic", tags=["academic"]
 
 # System settings management endpoints
 api_router.include_router(settings.router, prefix="/settings", tags=["settings"])
+
+# Stripe webhook endpoints (no authentication required for webhooks)
+api_router.include_router(stripe_webhooks.router, prefix="/webhooks", tags=["webhooks"])
