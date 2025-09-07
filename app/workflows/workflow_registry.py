@@ -1,7 +1,9 @@
 from enum import Enum
 
-from workflows.placeholder_workflow import PlaceholderWorkflow
+from workflows.enrollment_workflow import EnrollmentWorkflow
+from workflows.payment_workflow import PaymentWorkflow
 
 
 class WorkflowRegistry(Enum):
-    PLACEHOLDER = PlaceholderWorkflow
+    ENROLLMENT = EnrollmentWorkflow
+    PAYMENT = PaymentWorkflow

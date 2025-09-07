@@ -12,9 +12,10 @@ services:
           "-e",
           "fetch('http://studio:3000/api/platform/profile').then((r) => {if (r.status !== 200) throw new Error(r.status)})"
         ]
-      timeout: 10s
-      interval: 5s
-      retries: 3
+      timeout: 15s
+      interval: 10s
+      retries: 6
+      start_period: 45s
     depends_on:
       analytics:
         condition: service_healthy
@@ -79,9 +80,10 @@ services:
           "--spider",
           "http://localhost:9999/health"
         ]
-      timeout: 5s
-      interval: 5s
-      retries: 3
+      timeout: 10s
+      interval: 10s
+      retries: 6
+      start_period: 30s
     depends_on:
       db:
         condition: service_healthy
@@ -331,9 +333,10 @@ services:
           "curl",
           "http://localhost:4000/health"
         ]
-      timeout: 5s
-      interval: 5s
-      retries: 10
+      timeout: 10s
+      interval: 10s
+      retries: 20
+      start_period: 30s
     depends_on:
       db:
         condition: service_healthy
