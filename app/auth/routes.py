@@ -3,6 +3,7 @@ Authentication API routes for Cedar Heights Music Academy.
 """
 
 import logging
+import time
 from typing import Any, Dict
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -26,6 +27,19 @@ logger = logging.getLogger(__name__)
 # Create router
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 security = HTTPBearer()
+
+
+@router.get("/health", tags=["auth"])
+async def auth_health():
+    """
+    Auth service health endpoint for tests.
+    Returns simple top-level status as expected by tests.
+    """
+    return {
+        "status": "healthy",
+        "service": "authentication",
+        "version": "1.0.0",
+    }
 
 
 @router.post("/login", response_model=AuthResponse)
@@ -279,11 +293,3 @@ async def verify_token(
         }
     except AuthenticationError as e:
         return {"valid": False, "error": str(e)}
-
-
-@router.get("/health")
-async def auth_health_check() -> Dict[str, str]:
-    """
-    Health check endpoint for authentication service.
-    """
-    return {"status": "healthy", "service": "authentication", "version": "1.0.0"}

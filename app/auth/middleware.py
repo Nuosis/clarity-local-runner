@@ -77,6 +77,10 @@ class SupabaseJWTMiddleware(BaseHTTPMiddleware):
             "/redoc",
             "/openapi.json",
             "/health",
+            "/health/detailed",
+            "/health/ready",
+            "/health/live",
+            "/auth/health",
             "/metrics",
         }
 

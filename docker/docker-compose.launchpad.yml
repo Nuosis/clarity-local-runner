@@ -103,7 +103,7 @@ services:
       - redis_data:/data
 
   db:
-    container_name: supabase-db
+    container_name: "${PROJECT_NAME}_db"
     image: supabase/postgres:15.8.1.060
     restart: unless-stopped
     volumes:
