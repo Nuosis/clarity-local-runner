@@ -1,0 +1,11 @@
+{
+  "student_id": 1,
+  "lesson_id": null,
+  "stripe_payment_intent_id": "pi_1234567890abcdef",
+  "amount": 125.00,
+  "currency": "CAD",
+  "payment_method": "card",
+  "billing_cycle": "monthly",
+  "description": "Piano lesson - Monthly payment",
+  "payment_date": "2024-01-15T10:00:00Z"
+}

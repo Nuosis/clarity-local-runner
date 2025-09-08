@@ -236,3 +236,74 @@ async def get_semesters(
         return APIResponse(
             success=False, data=None, message=f"Failed to retrieve semesters: {str(e)}"
         )
+
+
+@router.post("/semesters", response_model=APIResponse[SemesterResponse])
+async def create_semester(
+    semester_data: SemesterCreate,
+    db: Session = Depends(db_session),
+    current_user: User = Depends(require_admin),
+):
+    """
+    Create a new semester.
+
+    Access: ADMIN only
+    """
+    try:
+        # Verify the academic year exists
+        academic_year = (
+            db.query(AcademicYear)
+            .filter(AcademicYear.id == semester_data.academic_year_id)
+            .first()
+        )
+
+        if not academic_year:
+            return APIResponse(
+                success=False,
+                data=None,
+                message="Academic year not found",
+            )
+
+        # Check if there's already a current semester and we're setting this as current
+        if semester_data.is_current:
+            # Set all other semesters to not current
+            db.query(Semester).update({"is_current": False})
+
+        # Create new semester
+        semester = Semester(
+            academic_year_id=semester_data.academic_year_id,
+            name=semester_data.name,
+            start_date=semester_data.start_date,
+            end_date=semester_data.end_date,
+            is_current=semester_data.is_current,
+        )
+
+        db.add(semester)
+        db.commit()
+        db.refresh(semester)
+
+        # Convert to response format
+        semester_response = SemesterResponse(
+            id=semester.id,
+            academic_year_id=semester.academic_year_id,
+            name=semester.name,
+            start_date=str(semester.start_date),
+            end_date=str(semester.end_date),
+            is_current=semester.is_current,
+            makeup_weeks=[],  # New semester won't have makeup weeks initially
+            created_at=str(semester.created_at),
+        )
+
+        return APIResponse(
+            success=True,
+            data=semester_response,
+            message="Semester created successfully",
+        )
+
+    except Exception as e:
+        db.rollback()
+        return APIResponse(
+            success=False,
+            data=None,
+            message=f"Failed to create semester: {str(e)}",
+        )

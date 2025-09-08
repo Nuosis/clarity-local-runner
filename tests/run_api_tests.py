@@ -88,6 +88,10 @@ def main():
         "test_03_auth.py",  # Authentication endpoints (public + optional authenticated flows)
         "test_04_students.py",  # Student management endpoints (protected)
         "test_05_teachers.py",  # Teacher management endpoints (protected)
+        "test_06_settings.py",  # System settings endpoints (protected)
+        "test_07_academic.py",  # Academic calendar endpoints (protected)
+        "test_08_payments.py",  # Payment management endpoints (protected)
+        "test_09_lessons.py",  # Lesson management endpoints (protected)
     ]
 
     # Track overall results

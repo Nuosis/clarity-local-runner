@@ -1,0 +1,12 @@
+{
+  "student_id": 1,
+  "teacher_id": 2,
+  "lesson_type": "piano",
+  "scheduled_start": "2024-01-15T14:00:00Z",
+  "scheduled_end": "2024-01-15T15:00:00Z",
+  "location": "Studio A",
+  "notes": "Focus on scales and arpeggios",
+  "recurring": true,
+  "recurrence_pattern": "weekly",
+  "recurrence_end": "2024-06-15T00:00:00Z"
+}

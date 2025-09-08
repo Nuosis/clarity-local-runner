@@ -49,7 +49,7 @@ from sqlalchemy.orm import Session, joinedload
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/payments", tags=["payments"])
+router = APIRouter()
 
 
 # Payment CRUD Operations

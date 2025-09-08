@@ -117,8 +117,15 @@ def test_student_endpoints():
     print("=" * 60)
 
     # Authenticate first
-    email = os.getenv("TEST_AUTH_EMAIL", "admin@cedarheights.com")
-    password = os.getenv("TEST_AUTH_PASSWORD", "admin123")
+    email = os.getenv("TEST_AUTH_EMAIL")
+    password = os.getenv("TEST_AUTH_PASSWORD")
+
+    if not email or not password:
+        print(
+            "❌ Authentication failed: TEST_AUTH_EMAIL and TEST_AUTH_PASSWORD environment variables not set"
+        )
+        print("❌ Authentication failed - skipping student tests")
+        return framework
 
     if not framework.authenticate(email, password):
         print("❌ Authentication failed - skipping student tests")
@@ -260,8 +267,15 @@ def test_student_validation_edge_cases():
     print("=" * 60)
 
     # Authenticate first
-    email = os.getenv("TEST_AUTH_EMAIL", "admin@cedarheights.com")
-    password = os.getenv("TEST_AUTH_PASSWORD", "admin123")
+    email = os.getenv("TEST_AUTH_EMAIL")
+    password = os.getenv("TEST_AUTH_PASSWORD")
+
+    if not email or not password:
+        print(
+            "❌ Authentication failed: TEST_AUTH_EMAIL and TEST_AUTH_PASSWORD environment variables not set"
+        )
+        print("❌ Authentication failed - skipping validation tests")
+        return framework
 
     if not framework.authenticate(email, password):
         print("❌ Authentication failed - skipping validation tests")

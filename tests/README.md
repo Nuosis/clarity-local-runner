@@ -11,7 +11,10 @@ This test suite provides automated testing for the Cedar Heights Music Academy A
 3. **Authentication Endpoints** - Login, token management
 4. **Student Endpoints** - Student management (requires authentication)
 5. **Teacher Endpoints** - Teacher management (requires authentication)
-6. **Protected Endpoints** - Additional endpoints requiring authentication (lessons, payments)
+6. **Settings Endpoints** - System settings management (requires authentication)
+7. **Academic Endpoints** - Academic calendar management (requires authentication)
+8. **Payment Endpoints** - Payment and subscription management (requires authentication)
+9. **Lesson Endpoints** - Lesson scheduling and management (requires authentication)
 
 ## Quick Start
 
@@ -26,11 +29,10 @@ This test suite provides automated testing for the Cedar Heights Music Academy A
 ```bash
 # Run all tests in order
 cd tests
-python run_api_tests.py
+python3 run_api_tests.py
 
 # Run individual test files
-python test_01_health.py
-python test_02_public.py
+python3 test_01_health.py
 ```
 
 ### Server Setup
@@ -127,6 +129,60 @@ Tests teacher management endpoints (requires authentication):
 - Get teacher students (`/api/v1/teachers/{id}/students`)
 - Get teacher lessons (`/api/v1/teachers/{id}/lessons`)
 - Validation and edge case testing
+
+### 6. Settings Tests (`test_06_settings.py`)
+
+Tests system settings management endpoints (requires authentication):
+- List system settings with filtering (`/api/v1/settings`)
+- Update system settings (`/api/v1/settings/{id}`)
+- Delete system settings (`/api/v1/settings/{id}`)
+- Category and visibility filtering
+- Admin-only access control testing
+- Non-admin user access restrictions
+- Validation and edge case testing
+
+### 7. Academic Tests (`test_07_academic.py`)
+
+Tests academic calendar management endpoints (requires authentication):
+- List academic years (`/api/v1/academic/years`)
+- Create academic years (`/api/v1/academic/years`)
+- List semesters with filtering (`/api/v1/academic/semesters`)
+- Create semesters (`/api/v1/academic/semesters`)
+- Current year/semester management
+- Date validation and edge cases
+- Admin-only creation access
+- Read access for all authenticated users
+
+### 8. Payment Tests (`test_08_payments.py`)
+
+Tests payment management endpoints (requires authentication):
+- List payments with pagination and filtering (`/api/v1/payments`)
+- Create payments (`/api/v1/payments`)
+- Get payment details (`/api/v1/payments/{id}`)
+- Update payment status (`/api/v1/payments/{id}`)
+- Delete payments (`/api/v1/payments/{id}`)
+- List subscriptions (`/api/v1/payments/subscriptions`)
+- Create subscriptions (`/api/v1/payments/subscriptions`)
+- Process payment workflows (`/api/v1/payments/workflows/process`)
+- Get workflow status (`/api/v1/payments/workflows/{id}/status`)
+- Role-based access (parents see only their payments)
+- Comprehensive validation and error handling
+
+### 9. Lesson Tests (`test_09_lessons.py`)
+
+Tests lesson management endpoints (requires authentication):
+- List lessons with pagination and filtering (`/api/v1/lessons`)
+- Create lessons with conflict detection (`/api/v1/lessons`)
+- Get lesson details (`/api/v1/lessons/{id}`)
+- Update lesson information (`/api/v1/lessons/{id}`)
+- Delete lessons (`/api/v1/lessons/{id}`)
+- Cancel lessons (`/api/v1/lessons/{id}/cancel`)
+- Complete lessons (`/api/v1/lessons/{id}/complete`)
+- Check scheduling conflicts (`/api/v1/lessons/check-conflicts`)
+- Get schedule views (`/api/v1/lessons/schedule/view`)
+- Advanced scheduling logic and validation
+- Teacher conflict detection
+- Multiple view types (day/week/month)
 
 ## Features
 
