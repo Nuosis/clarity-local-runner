@@ -7,7 +7,8 @@
 - **SOLID Principles**: Follow Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, and Dependency Inversion principles
 - **DRY (Don't Repeat Yourself)**: Eliminate code duplication through proper abstraction
 - **KISS (Keep It Simple, Stupid)**: Prefer simple, straightforward solutions over complex ones
-- **YAGNI (You Aren't Gonna Need It)**: Don't implement features until they are actually needed
+- **YAGNI (You Aren't Gonna Need It)**: Don't implement features until they are actually needed. Simple and effective over complexity. **DO NOT OVER ENGINEER**
+- **DO NOT Over Engineer** Over Engineering is implmenting features to ensure productivity and efficiency required for a higher demand than the current use case requires. "Best " is not always "Best for us". Understand the user context and implmentation landscape when planning.
 
 ### Design Patterns and Architecture
 - **Design Patterns**: Use established patterns (Strategy, Factory, Observer, Chain of Responsibility, etc.) when appropriate
