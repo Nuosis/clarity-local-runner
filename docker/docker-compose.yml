@@ -2,8 +2,8 @@ include:
   - path: ./docker-compose.launchpad.yml
   - path: ./docker-compose.supabase.yml
 
-networks:
-  default:
-    driver: bridge
-    external: true
-    name: "${PROJECT_NAME}_network"
+# networks:
+#   default:
+#     driver: bridge
+#     external: true
+#     name: "${PROJECT_NAME}_network"

@@ -193,6 +193,59 @@
     2) Add sufficient logging to elucidate the problem in the logs. If that relevels a likely source, attempt to address. Attempt this cycle no more than 2 time
     3) Utilize the Error Solving MCP to resolve issue
 
+## LOCAL DEVELOPMENT ENVIRONMENT
+
+### Overview
+The Clarity Local Runner is a Docker-based development environment that provides an isolated, full-stack application setup with Supabase backend services. The environment uses custom port configurations to prevent conflicts with other development containers.
+
+### Architecture
+- **FastAPI Application**: Python-based API server with workflow orchestration capabilities
+- **Supabase Stack**: Complete backend-as-a-service including PostgreSQL, Auth, Storage, and Edge Functions
+- **Redis**: Caching and task queue management
+- **Celery**: Distributed task processing
+
+### Starting the Environment
+```bash
+cd docker
+./start.sh
+```
+
+### Common Testing Endpoints
+
+#### API Services
+- **Main API**: `http://localhost:8090` - FastAPI application with OpenAPI docs at `/docs`
+- **Health Check**: `http://localhost:8090/health` - Service health status
+- **API v1**: `http://localhost:8090/api/v1/` - Versioned API endpoints
+
+#### Supabase Services
+- **Supabase API Gateway**: `http://localhost:8010` - Kong gateway for all Supabase services
+- **Supabase Studio**: `http://localhost:3010` - Database management interface
+- **Analytics Dashboard**: `http://localhost:4010` - Logflare analytics interface
+
+#### Database Access
+- **PostgreSQL**: `localhost:5433` - Direct database connection
+  - Username: `postgres`
+  - Password: See `POSTGRES_PASSWORD` in `docker/.env`
+  - Database: See `POSTGRES_DB` in `docker/.env`
+- **Connection Pooler**: `localhost:6544` - Supavisor connection pooling
+
+#### Development Tools
+- **Redis**: `localhost:6390` - Direct Redis access for debugging
+- **Container Logs**: `docker logs <container_name>` - View service logs
+- **Service Status**: `docker ps` - Check running containers
+
+### Environment Configuration
+All ports and settings are configurable via `docker/.env`:
+- Modify `CLARITY_*_PORT` variables to change service ports
+- Update `PROJECT_NAME` to change container naming prefix
+- Adjust resource limits in docker-compose files as needed
+
+### Troubleshooting
+- **Port Conflicts**: Check `docker/.env` for port configurations
+- **Container Issues**: Use `docker ps` and `docker logs` for diagnostics
+- **Database Connection**: Verify PostgreSQL is running on configured port
+- **API Connectivity**: Ensure FastAPI service is healthy via health endpoint
+
 ## SERVER
-- project is servwr in docker
-- use docker ps to verify server is running 
+- project is served in docker
+- use docker ps to verify server is running

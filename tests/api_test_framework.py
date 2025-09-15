@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Quick and Dirty API Test Framework for Cedar Heights Music Academy API
+Quick and Dirty API Test Framework
 
 This framework provides simple API testing capabilities with authentication handling.
 Tests are organized from basic to complex and can be run individually or as a suite.

@@ -1,7 +1,7 @@
 services:
 
   studio:
-    container_name: supabase-studio
+    container_name: ${PROJECT_NAME}_supabase-studio
     image: supabase/studio:20250317-6955350
     restart: unless-stopped
     healthcheck:
@@ -39,12 +39,12 @@ services:
       NEXT_ANALYTICS_BACKEND_PROVIDER: postgres
 
   kong:
-    container_name: supabase-kong
+    container_name: ${PROJECT_NAME}_supabase-kong
     image: kong:2.8.1
     restart: unless-stopped
     ports:
-      - ${KONG_HTTP_PORT}:8000/tcp
-      - ${KONG_HTTPS_PORT}:8443/tcp
+      - ${CLARITY_KONG_HTTP_PORT:-8010}:8000/tcp
+      - ${CLARITY_KONG_HTTPS_PORT:-8443}:8443/tcp
     volumes:
       # https://github.com/supabase/supabase/issues/12661
       - ./volumes/api/kong.yml:/home/kong/temp.yml:ro,z
@@ -67,7 +67,7 @@ services:
     entrypoint: bash -c 'eval "echo \"$$(cat ~/temp.yml)\"" > ~/kong.yml && /docker-entrypoint.sh kong docker-start'
 
   auth:
-    container_name: supabase-auth
+    container_name: ${PROJECT_NAME}_supabase-auth
     image: supabase/gotrue:v2.170.0
     restart: unless-stopped
     healthcheck:
@@ -150,7 +150,7 @@ services:
       # GOTRUE_HOOK_SEND_EMAIL_SECRETS: "v1,whsec_VGhpcyBpcyBhbiBleGFtcGxlIG9mIGEgc2hvcnRlciBCYXNlNjQgc3RyaW5n"
 
   rest:
-    container_name: supabase-rest
+    container_name: ${PROJECT_NAME}_supabase-rest
     image: postgrest/postgrest:v12.2.8
     restart: unless-stopped
     depends_on:
@@ -173,7 +173,7 @@ services:
 
   realtime:
     # This container name looks inconsistent but is correct because realtime constructs tenant id by parsing the subdomain
-    container_name: realtime-dev.supabase-realtime
+    container_name: realtime-dev.${PROJECT_NAME}_supabase-realtime
     image: supabase/realtime:v2.34.43
     restart: unless-stopped
     depends_on:
@@ -216,7 +216,7 @@ services:
       RUN_JANITOR: true
 
   storage:
-    container_name: supabase-storage
+    container_name: ${PROJECT_NAME}_supabase-storage
     image: supabase/storage-api:v1.19.3
     restart: unless-stopped
     volumes:
@@ -258,7 +258,7 @@ services:
       IMGPROXY_URL: http://imgproxy:5001
 
   imgproxy:
-    container_name: supabase-imgproxy
+    container_name: ${PROJECT_NAME}_supabase-imgproxy
     image: darthsim/imgproxy:v3.8.0
     restart: unless-stopped
     volumes:
@@ -280,7 +280,7 @@ services:
       IMGPROXY_ENABLE_WEBP_DETECTION: ${IMGPROXY_ENABLE_WEBP_DETECTION}
 
   meta:
-    container_name: supabase-meta
+    container_name: ${PROJECT_NAME}_supabase-meta
     image: supabase/postgres-meta:v0.87.1
     restart: unless-stopped
     depends_on:
@@ -297,7 +297,7 @@ services:
       PG_META_DB_PASSWORD: ${POSTGRES_PASSWORD}
 
   functions:
-    container_name: supabase-edge-functions
+    container_name: ${PROJECT_NAME}_supabase-edge-functions
     image: supabase/edge-runtime:v1.67.4
     restart: unless-stopped
     volumes:
@@ -321,11 +321,11 @@ services:
       ]
 
   analytics:
-    container_name: supabase-analytics
+    container_name: ${PROJECT_NAME}_supabase-analytics
     image: supabase/logflare:1.12.0
     restart: unless-stopped
     ports:
-      - 4000:4000
+      - ${CLARITY_ANALYTICS_PORT:-4010}:4000
     healthcheck:
       test:
         [
@@ -415,7 +415,7 @@ services:
 #      ]
 
   vector:
-    container_name: supabase-vector
+    container_name: ${PROJECT_NAME}_supabase-vector
     image: timberio/vector:0.28.1-alpine
     restart: unless-stopped
     volumes:
@@ -446,12 +446,12 @@ services:
 
   # Update the DATABASE_URL if you are using an external Postgres database
   supavisor:
-    container_name: supabase-pooler
+    container_name: ${PROJECT_NAME}_supabase-pooler
     image: supabase/supavisor:2.4.14
     restart: unless-stopped
     ports:
-      - ${POSTGRES_PORT}:5432
-      - ${POOLER_PROXY_PORT_TRANSACTION}:6543
+      - ${CLARITY_POSTGRES_PORT:-5433}:5432
+      - ${CLARITY_POOLER_PORT:-6544}:6543
     volumes:
       - ./volumes/pooler/pooler.exs:/etc/pooler/pooler.exs:ro,z
     healthcheck:

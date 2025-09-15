@@ -1,9 +1,0 @@
-{
-  "user_id": 1,
-  "instruments": ["piano", "guitar"],
-  "hourly_rate": 125.00,
-  "max_students": 30,
-  "is_available": true,
-  "bio": "Experienced music teacher with 15 years of teaching experience. Specializes in classical piano and acoustic guitar. Holds a Master's degree in Music Education from Dalhousie University.",
-  "photo_url": "https://example.com/photos/teacher-profile.jpg"
-}

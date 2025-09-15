@@ -9,8 +9,7 @@ from database.database_utils import DatabaseUtils
 from database.session import Base
 
 # Import all models for autogenerate support
-from database.event import *
-from models import *
+from database.event import Event
 
 """
 Alembic Environment Module
