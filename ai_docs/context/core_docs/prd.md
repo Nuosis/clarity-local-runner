@@ -1,693 +1,355 @@
-# Cedar Heights Music Academy — GenAI Launchpad-Powered Backend System Product Requirements Document
+# DevTeam Runner Service - Product Requirements Document
+**MVP READY**
 
-## Executive Summary
+## Product Overview
 
-Cedar Heights Music Academy will leverage the GenAI Launchpad DAG-based workflow orchestration framework as the foundation for its comprehensive Python backend API system. This approach combines the power of type-safe, event-driven workflow orchestration with the specific business requirements of a solo-managed music school, creating a scalable, maintainable system that reduces administrative overhead by 60% while supporting growth to 100+ students.
+The DevTeam Runner Service is a critical backend microservice that enables autonomous development task execution for the Clarity CRM Frontend's DevTeam feature. This Python/FastAPI service orchestrates automated development workflows through a SELECT→PREP→IMPLEMENT→VERIFY pipeline, transforming manual task-by-task development into continuous, automated progression.
 
-**Primary Business Outcome:** Enable efficient solo-preneur management of a growing music school through a robust, workflow-driven backend that automates complex business processes while providing fast, reliable APIs for the React frontend.
+**Value Proposition**: Enable ≥80% autonomous task completion without human intervention, supporting parallel customer project workflows while maintaining quality through automated verification.
 
-**Technical Approach:** Build the Cedar Heights backend as a collection of specialized workflows within the GenAI Launchpad framework, leveraging DAG-based processing for complex operations while maintaining <200ms response times for simple API calls.
+## Scope Additions (Integration Alignment)
+- Docker Container Orchestration: per-task isolated containers with health checks, CPU/RAM limits, automatic cleanup, and restart/backoff policies; isolated volumes/workspaces.
+- WebSocket Communication Infrastructure: connection pooling, project/user routing, reconnection with backoff, backpressure/throttling, authN/Z, and message validation.
+- DevTeam Automation API: initialize/status/pause/resume/stop automation; repository validate; task list read/update; error details; task injection; active/history listings.
+- Workflow Ownership: Repository Initialization Workflow; Task Execution State Machine; Execute Code Change Workflow (GenAI Launchpad); and related GenAI workflows.
+- MVP vs Roadmap: MVP delivers the core runner + Automation API for repo init, task state, and code change (Aider). Phase 2 extends to full GenAI workflow engine (Ollama prompt construction, GPT-5 Medium execution) without changing external contracts.
 
-**Timeline:** MVP delivery within 4-6 months, with the GenAI Launchpad framework providing accelerated development through pre-built workflow patterns and type-safe orchestration.
+## Event-Driven and DAG Architecture Alignment
+- Primary ingestion via POST /events using the existing event system; FastAPI router mounts events API at [router.include_router](app/api/router.py:14) and the handler persists events in the database in [events_endpoint()](app/api/endpoint.py:43) before queuing Celery.
+- Asynchronous execution handled by Celery using [process_incoming_event()](app/worker/tasks.py:19), which loads the Event, dispatches a DAG workflow via [Workflow.run()](app/core/workflow.py:105), and persists results to Event.task_context.
+- DAG orchestration follows the GenAI Launchpad engine in [Workflow.run()](app/core/workflow.py:105) and its schema parsing at [Workflow.__run()](app/core/workflow.py:119-135), ensuring Pydantic-validated event schemas feed node execution.
+- Persistence model uses Event storage with raw data and task_context in [Event](app/database/event.py:13); migrations are managed with Alembic ([env.py](app/alembic/env.py:11)). Supabase PostgreSQL backs persistence (docker-compose.supabase).
+- Queueing and scalability use Celery+Redis per [celery_app](app/worker/config.py:39); API returns 202 Accepted with task_id upon enqueue.
 
-## Product Vision and Unified Objectives
+## Personas (≤3)
 
-**Vision:** Create a workflow-driven music school management system that demonstrates the power of the GenAI Launchpad framework for real-world business applications, while delivering exceptional performance and maintainability for Cedar Heights Music Academy.
+### 1. Frontend Developer (Primary User)
+- **Goals**: Execute development tasks automatically through DevTeam interface, monitor real-time progress, focus on high-value work
+- **Pain Points**: Manual task execution bottlenecks, context switching between projects, repetitive implementation work
+- **Technical Level**: High - familiar with Git workflows, development tools, and CI/CD processes
 
-**Primary Objectives:**
-1. **Workflow-Driven Architecture:** Leverage GenAI Launchpad's DAG orchestration for complex business processes
-2. **API Performance:** Achieve <200ms for quick operations, <2s for workflow-orchestrated complex operations
-3. **Type Safety:** Eliminate runtime errors through end-to-end Pydantic validation across workflows and APIs
-4. **Business Process Automation:** Automate enrollment, payment, and scheduling through intelligent workflows
-5. **Production Readiness:** Deliver enterprise-grade reliability with comprehensive monitoring and error handling
+### 2. Project Manager (Secondary User)  
+- **Goals**: Monitor multiple customer project progress, track completion rates, identify bottlenecks across teams
+- **Pain Points**: Lack of visibility into development progress, difficulty coordinating multiple projects, manual status reporting
+- **Technical Level**: Medium - understands development concepts but focuses on project coordination
 
-**Success Metrics:**
-- **Development Velocity:** 50% reduction in backend development time through workflow reuse
-- **System Performance:** <200ms API response times, <2s workflow completion times
-- **Error Reduction:** 95% elimination of runtime errors through type safety
-- **Business Automation:** 60% reduction in administrative overhead through workflow automation
-- **System Reliability:** 99.9% uptime with automated failover and recovery
+### 3. Backend Developer (System Maintainer)
+- **Goals**: Maintain service reliability, integrate with external tools, troubleshoot execution failures
+- **Pain Points**: Complex Git repository management, tool integration failures, debugging distributed execution issues
+- **Technical Level**: High - expert in backend systems, containerization, and service integration
 
-## System Architecture Overview
+## Primary Journeys (3)
 
-### Core Architecture: GenAI Launchpad + Cedar Heights Integration
+### Journey 1: Autonomous Task Execution
+**Start**: Frontend developer initiates task execution → **Finish**: Task completed with verification passed
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    React Frontend                           │
-└─────────────────────┬───────────────────────────────────────┘
-                      │ REST API Calls
-┌─────────────────────▼───────────────────────────────────────┐
-│                FastAPI Layer                                │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
-│  │   Quick APIs    │  │  Workflow APIs  │  │  Public APIs │ │
-│  │   (<200ms)      │  │   (<2s)         │  │              │ │
-│  └─────────────────┘  └─────────────────┘  └──────────────┘ │
-└─────────────────────┬───────────────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────────┐
-│              GenAI Launchpad Framework                      │
-│  ┌─────────────────────────────────────────────────────────┐ │
-│  │                Workflow Engine                          │ │
-│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────────────┐ │ │
-│  │  │ Enrollment  │ │  Payment    │ │    Scheduling       │ │ │
-│  │  │ Workflows   │ │ Workflows   │ │    Workflows        │ │ │
-│  │  └─────────────┘ └─────────────┘ └─────────────────────┘ │ │
-│  └─────────────────────────────────────────────────────────┘ │
-│  ┌─────────────────────────────────────────────────────────┐ │
-│  │              Event-Driven Architecture                  │ │
-│  │     Redis Streams + Celery + TaskContext               │ │
-│  └─────────────────────────────────────────────────────────┘ │
-└─────────────────────┬───────────────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────────┐
-│                 Data Layer                                  │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
-│  │    Supabase     │  │     Redis       │  │   External   │ │
-│  │   PostgreSQL    │  │    Caching      │  │   Services   │ │
-│  └─────────────────┘  └─────────────────┘  └──────────────┘ │
-└─────────────────────────────────────────────────────────────┘
-```
+**Flow**:
+1. DevTeam UI submits a DevTeamAutomation event to POST /events (workflow_type=DEVTEAM_AUTOMATION; payload includes projectId/task context)
+2. API validates payload, persists Event, and enqueues Celery task (202 Accepted with task_id) via [celery_app.send_task](app/api/endpoint.py:72)
+3. Celery worker loads Event and dispatches DAG via [WorkflowRegistry](app/worker/tasks.py:7-8) → [Workflow.run()](app/core/workflow.py:105)
+4. Nodes perform SELECT→PREP→IMPLEMENT→VERIFY within the workflow DAG (tools, repo prep, verification)
+5. Node outputs and execution state accumulate in Event.task_context and are committed to DB
+6. On completion or failure, final status recorded in Event.task_context; idempotency handled at event layer
+7. Frontend polls or subscribes to updates (WS/EDA integration) to render progress and results
 
-### Workflow-API Integration Pattern
+### Journey 2: Real-time Progress Monitoring
+**Start**: User connects to execution session → **Finish**: Complete visibility of task progress and logs
 
-The system uses a hybrid approach:
-- **Quick Operations:** Direct FastAPI endpoints for simple CRUD operations
-- **Complex Operations:** GenAI Launchpad workflows for multi-step business processes
-- **Event-Driven Processing:** Background workflows for non-blocking operations
+**Flow**:
+1. Frontend establishes WebSocket connection to /ws/devteam
+2. Service streams execution-update events with progress percentages
+3. Service streams execution-log events with detailed operation logs
+4. User receives real-time feedback on current operation status
+5. Connection maintains stability with automatic reconnection on failures
+### Journey 3: Multi-Customer Project Management
+**Start**: Multiple customer projects queued → **Finish**: Parallel execution with isolated progress tracking
 
-## Core Functional Requirements
+**Flow**:
+1. Service receives execution requests for different customer projects
+2. Resource isolation ensures separate working directories per customer
+3. Parallel task execution maintains independent progress tracking
+4. WebSocket events include customerId for proper frontend routing
+5. Completion artifacts stored separately per customer project
 
-### 1. Authentication and Authorization System
+## Workflow Responsibilities
+- Repository Initialization Workflow: clone/pull repository, ensure task_lists.md exists and is valid (create from template if missing), start local runner container, verify runner health.
+- Task Execution State Machine: SELECT → PREP → IMPLEMENT → VERIFY → MERGE → PUSH → UPDATE_TASKLIST → DONE with error paths to injected error-resolution task and optional human review; idempotent transitions and correlation IDs.
+- Execute Code Change Workflow (GenAI Launchpad):
+  - GatherContextNode: create isolated container and clone repo
+  - ConstructTaskPromptNode: build focused prompt (Ollama Qwen3 8B) [Phase 2]; MVP uses deterministic prompt template
+  - CodeExecutionNode: execute code changes (GPT-5 Medium) [Phase 2]; MVP uses Aider-driven changes
+  - VerifyNode: build/test checks, ≤2 retries, container cleanup
+- Additional GenAI workflows: orchestrated by this service and activated per project policy; planned for Phase 2.
 
-#### Quick API Operations (<200ms)
-```python
-# Direct FastAPI endpoints
-@app.post("/api/auth/validate")
-async def validate_token(token: str) -> UserInfo:
-    """Direct Supabase JWT validation"""
+## Functional Requirements by Journey (MoSCoW)
 
-@app.get("/api/auth/me")
-async def get_current_user() -> UserProfile:
-    """Quick user profile retrieval"""
-```
+### Journey 1: Autonomous Task Execution
+**Must Have**:
+- Health check endpoint validates all dependencies (git, aider, filesystem)
+- Task selection from tasks_list.md with dependency resolution
+- Repository preparation with branch creation (task/<taskId>-<kebab-title>)
+- Aider tool integration for implementation with artifact capture
+- Quality verification against test coverage, type checking, documentation
+- Stop-on-error semantics preventing progression on failures
+- Idempotent operations with idempotencyKey support
 
-#### Workflow-Driven Operations
-```python
-class AccountSetupWorkflow(Workflow):
-    """Handle complex account creation from enrollment"""
-    workflow_schema = WorkflowSchema(
-        description="Complete account setup and onboarding",
-        event_schema=EnrollmentHandoffSchema,
-        start=ValidateEnrollmentNode,
-        nodes=[
-            NodeConfig(node=ValidateEnrollmentNode, connections=[CreateAccountNode]),
-            NodeConfig(node=CreateAccountNode, connections=[SendWelcomeEmailNode]),
-            NodeConfig(node=SendWelcomeEmailNode, connections=[SetupPaymentNode]),
-            NodeConfig(node=SetupPaymentNode, connections=[CompleteOnboardingNode])
-        ]
-    )
-```
+**Should Have**:
+- Automatic cleanup of old working directories
+- Comprehensive error classification and recovery mechanisms
+- Structured logging with correlation IDs
 
-### 2. Student Management System
+**Could Have**:
+- Multiple tool support beyond Aider
+- Advanced dependency resolution algorithms
+- Automatic conflict resolution for Git operations
 
-#### Quick API Operations (<200ms)
-```python
-@app.get("/api/students")
-async def list_students(filters: StudentFilters) -> List[Student]:
-    """Fast student listing with filtering"""
+### Journey 2: Real-time Progress Monitoring
+**Must Have**:
+- WebSocket server at /ws/devteam endpoint
+- Execution-update events with progress percentages
+- Execution-log events with operation details
+- Event delivery within ≤500ms latency
+- Connection recovery with exponential backoff
 
-@app.get("/api/students/{student_id}")
-async def get_student(student_id: int) -> Student:
-    """Quick student detail retrieval"""
-```
+**Should Have**:
+- Event throttling for high-frequency updates
+- Client-side connection state management
+- Historical event replay on reconnection
 
-#### Workflow-Driven Operations
-```python
-class StudentEnrollmentWorkflow(Workflow):
-    """Complete student enrollment process"""
-    workflow_schema = WorkflowSchema(
-        description="End-to-end student enrollment",
-        event_schema=EnrollmentRequestSchema,
-        start=ValidateEnrollmentNode,
-        nodes=[
-            NodeConfig(node=ValidateEnrollmentNode, connections=[CheckAvailabilityNode]),
-            NodeConfig(node=CheckAvailabilityNode, connections=[CreateStudentRecordNode]),
-            NodeConfig(node=CreateStudentRecordNode, connections=[ScheduleDemoLessonNode]),
-            NodeConfig(node=ScheduleDemoLessonNode, connections=[SendConfirmationNode])
-        ]
-    )
-```
+**Could Have**:
+- Event filtering by log level or operation type
+- Real-time performance metrics streaming
 
-### 3. Payment Processing System
+### Journey 3: Multi-Customer Project Management
+**Must Have**:
+- Customer isolation with separate working directories
+- Parallel execution support for multiple customers
+- CustomerId included in all WebSocket events
+- Resource limits per customer execution
 
-#### Quick API Operations (<200ms)
-```python
-@app.get("/api/payments")
-async def list_payments(filters: PaymentFilters) -> List[Payment]:
-    """Fast payment history retrieval"""
+**Should Have**:
+- Customer-specific configuration management
+- Execution queue management per customer
+- Resource usage monitoring per customer
 
-@app.get("/api/billing/{parent_id}")
-async def get_billing_info(parent_id: int) -> BillingInfo:
-    """Quick billing information lookup"""
-```
+**Could Have**:
+- Customer priority-based execution scheduling
+- Cross-customer resource sharing optimization
 
-#### Workflow-Driven Operations
-```python
-class PaymentProcessingWorkflow(Workflow):
-    """Handle Stripe payment processing"""
-    workflow_schema = WorkflowSchema(
-        description="Complete payment processing with error handling",
-        event_schema=PaymentRequestSchema,
-        start=CreatePaymentIntentNode,
-        nodes=[
-            NodeConfig(node=CreatePaymentIntentNode, connections=[ProcessPaymentNode]),
-            NodeConfig(node=ProcessPaymentNode, connections=[PaymentRouterNode]),
-            NodeConfig(
-                node=PaymentRouterNode, 
-                connections=[PaymentSuccessNode, PaymentFailureNode],
-                is_router=True
-            ),
-            NodeConfig(node=PaymentSuccessNode, connections=[UpdateBillingNode]),
-            NodeConfig(node=PaymentFailureNode, connections=[RetryPaymentNode])
-        ]
-    )
-```
+## Non-Functional Requirements (Targets)
+### Performance Requirements
+- **Response Times**: ≤2s for /prep operations, ≤30s for /implement operations, ≤60s for /verify operations
+- **WebSocket Latency**: Real-time events delivered within ≤500ms
+- **Concurrent Executions**: Support minimum 5 parallel customer executions
+- **Resource Cleanup**: Automatic cleanup of working directories >24 hours old
+- **Container Bootstrap Time**: ≤5s (p50), ≤10s (p95)
+- **Container Teardown**: Cleanup within ≤60s after completion
+- **WebSocket Handshake**: ≤300ms; reconnect backoff capped at 30s
+- **Per-Execution Resource Quotas**: Default 1 vCPU, 2 GiB RAM (configurable per project)
+- **Celery Queue SLA**: Time-to-start p95 ≤5s from POST /events to worker execution; default worker concurrency ≥4
+- **DB Write SLA**: Event.task_context persistence within ≤1s after node completion
 
-### 4. Lesson Scheduling System
 
-#### Quick API Operations (<200ms)
-```python
-@app.get("/api/lessons")
-async def list_lessons(filters: LessonFilters) -> List[Lesson]:
-    """Fast lesson listing"""
+### Reliability Requirements
+- **Uptime Target**: 99.9% service availability
+- **Autonomous Completion Rate**: ≥80% of atomic tasks completed without human intervention
+- **Error Recovery**: Graceful degradation when external tools unavailable
+- **Idempotency**: All state-changing operations must be idempotent
+### Security Requirements
+- **Input Validation**: Comprehensive validation for all request parameters
+- **Output Sanitization**: Redact secrets and tokens from all outputs
+- **Repository Access**: Secure Git authentication with minimal permissions
+- **Process Isolation**: Sandboxed execution of external tools
+- **Audit Logging**: Complete audit trail for all operations
+- **WebSocket AuthZ**: JWT/session validation and per-project authorization on /ws/devteam
+- **Message Validation**: Strict schema and size limits; drop malformed frames
+- **Container Sandbox**: Restrict filesystem to workspace; limit egress to Git/AI services; no host mounts by default
 
-@app.get("/api/teachers/{teacher_id}/availability")
-async def get_teacher_availability(teacher_id: int) -> AvailabilityInfo:
-    """Quick availability check"""
-```
 
-#### Workflow-Driven Operations
-```python
-class SchedulingWorkflow(Workflow):
-    """Intelligent lesson scheduling with conflict resolution"""
-    workflow_schema = WorkflowSchema(
-        description="Automated lesson scheduling with optimization",
-        event_schema=SchedulingRequestSchema,
-        start=CheckAvailabilityNode,
-        nodes=[
-            NodeConfig(node=CheckAvailabilityNode, connections=[ConflictDetectionNode]),
-            NodeConfig(node=ConflictDetectionNode, connections=[SchedulingRouterNode]),
-            NodeConfig(
-                node=SchedulingRouterNode,
-                connections=[DirectScheduleNode, ConflictResolutionNode],
-                is_router=True
-            ),
-            NodeConfig(node=ConflictResolutionNode, connections=[OptimizeScheduleNode]),
-            NodeConfig(node=OptimizeScheduleNode, connections=[FinalizeScheduleNode])
-        ]
-    )
+## Core Data Objects (≤5)
+
+### 0. Event Record
+```json
+{
+  "id": "uuid",
+  "workflow_type": "DEVTEAM_AUTOMATION",
+  "data": {
+    "projectId": "customer-123/project-abc",
+    "task": { "id": "1.1.1", "title": "…" },
+    "options": { "stopPoint": null, "idempotencyKey": "…" }
+  },
+  "task_context": {
+    "nodes": { "SelectNode": { "status": "completed" } },
+    "metadata": { "correlationId": "…" }
+  },
+  "created_at": "2025-01-14T18:25:00Z",
+  "updated_at": "2025-01-14T18:30:00Z"
+}
 ```
 
-### 5. Communication and Notification System
-
-#### Workflow-Driven Operations
-```python
-class NotificationWorkflow(Workflow):
-    """Multi-channel notification delivery"""
-    workflow_schema = WorkflowSchema(
-        description="Intelligent notification routing and delivery",
-        event_schema=NotificationRequestSchema,
-        start=DetermineChannelsNode,
-        nodes=[
-            NodeConfig(node=DetermineChannelsNode, connections=[NotificationRouterNode]),
-            NodeConfig(
-                node=NotificationRouterNode,
-                connections=[EmailNode, SMSNode, InAppNode],
-                is_router=True
-            ),
-            NodeConfig(
-                node=EmailNode,
-                connections=[TrackDeliveryNode],
-                concurrent_nodes=[SMSNode, InAppNode]
-            ),
-            NodeConfig(node=TrackDeliveryNode, connections=[])
-        ]
-    )
+### 1. Task Definition
+```json
+{
+  "id": "1.1.1",
+  "title": "Add DEVTEAM_ENABLED flag to src/config.js", 
+  "description": "Add DEVTEAM_ENABLED flag with default false and JSDoc",
+  "type": "atomic",
+  "dependencies": [],
+  "files": ["src/config.js"],
+  "criteria": {
+    "test.coverage": "≥80%",
+    "type.strict": "0 errors", 
+    "doc.updated": "task_outcomes.md"
+  },
+  "status": "pending"
+}
 ```
 
-## Workflow Node Specifications
-
-### Core Node Types for Cedar Heights
-
-#### 1. Validation Nodes
-```python
-class ValidateEnrollmentNode(Node):
-    """Validate enrollment data with comprehensive checks"""
-    
-    class OutputType(BaseModel):
-        is_valid: bool
-        validation_errors: List[str]
-        sanitized_data: Dict[str, Any]
-    
-    async def process(self, task_context: TaskContext) -> TaskContext:
-        # Comprehensive validation logic
-        enrollment_data = task_context.event.enrollment_data
-        
-        # Validate required fields, format, business rules
-        validation_result = await self.validate_enrollment(enrollment_data)
-        
-        task_context.update_node(self.node_name, **validation_result.dict())
-        
-        if not validation_result.is_valid:
-            task_context.stop_workflow()
-            
-        return task_context
+### 2. Execution State
+```json
+{
+  "customerId": "customer-123",
+  "currentTask": "1.1.1", 
+  "status": "IMPLEMENTING",
+  "branch": "task/1-1-1-add-devteam-enabled-flag",
+  "progress": 45.2,
+  "startTime": "2025-01-14T18:25:00Z",
+  "artifacts": {
+    "repoPath": "/workspace/repos/repo-hash",
+    "logs": ["Implementation started", "Aider tool initialized"]
+  }
+}
 ```
 
-#### 2. External Service Integration Nodes
-```python
-class StripePaymentNode(Node):
-    """Handle Stripe payment processing with error handling"""
-    
-    class OutputType(BaseModel):
-        payment_intent_id: str
-        status: str
-        amount: int
-        error_message: Optional[str] = None
-    
-    async def process(self, task_context: TaskContext) -> TaskContext:
-        payment_data = task_context.event.payment_data
-        
-        try:
-            # Stripe API integration
-            payment_intent = await self.create_payment_intent(payment_data)
-            result = self.OutputType(
-                payment_intent_id=payment_intent.id,
-                status=payment_intent.status,
-                amount=payment_intent.amount
-            )
-        except StripeError as e:
-            result = self.OutputType(
-                payment_intent_id="",
-                status="failed",
-                amount=0,
-                error_message=str(e)
-            )
-        
-        task_context.update_node(self.node_name, **result.dict())
-        return task_context
+### 3. Operation Artifact
+```json
+{
+  "operation": "implement",
+  "taskId": "1.1.1",
+  "tool": "aider",
+  "success": true,
+  "duration": 12.5,
+  "outputs": {
+    "diff": "git diff output",
+    "stdout": "Tool execution output", 
+    "filesModified": ["src/config.js"],
+    "linesChanged": 5
+  }
+}
 ```
 
-#### 3. Business Logic Nodes
-```python
-class ScheduleOptimizationNode(Node):
-    """Optimize lesson scheduling based on constraints"""
-    
-    class OutputType(BaseModel):
-        optimized_schedule: List[LessonSlot]
-        conflicts_resolved: int
-        optimization_score: float
-    
-    async def process(self, task_context: TaskContext) -> TaskContext:
-        scheduling_request = task_context.event.scheduling_request
-        
-        # Complex scheduling algorithm
-        optimizer = ScheduleOptimizer()
-        result = await optimizer.optimize(scheduling_request)
-        
-        task_context.update_node(self.node_name, **result.dict())
-        return task_context
+### 4. WebSocket Event
+```json
+{
+  "type": "execution-update",
+  "customerId": "customer-123", 
+  "taskId": "1.1.1",
+  "status": "IMPLEMENTING",
+  "progress": 45.2,
+  "timestamp": "2025-01-14T18:30:00Z"
+}
 ```
 
-#### 4. Router Nodes for Business Logic
-```python
-class EnrollmentRouterNode(RouterNode):
-    """Route enrollment based on student type and availability"""
-    
-    async def determine_next_nodes(self, task_context: TaskContext) -> List[Type[Node]]:
-        enrollment_data = task_context.nodes.get("ValidateEnrollmentNode", {})
-        
-        if enrollment_data.get("is_returning_student"):
-            return [ReturningStudentNode]
-        elif enrollment_data.get("requires_demo"):
-            return [DemoLessonNode]
-        else:
-            return [DirectEnrollmentNode]
+### 5. Verification Result
+```json
+{
+  "taskId": "1.1.1",
+  "success": true,
+  "results": {
+    "test.coverage": {"passed": true, "actual": "85%", "required": "≥80%"},
+    "type.strict": {"passed": true, "actual": "0 errors", "required": "0 errors"},
+    "doc.updated": {"passed": true, "files": ["docs/DevTeam/task_outcomes.md"]}
+  }
+}
 ```
 
-## Data Models and Schemas
+## Acceptance Criteria (Given/When/Then) per Journey
 
-### Event Schemas
-```python
-class EnrollmentRequestSchema(BaseModel):
-    """Enrollment request from public website"""
-    student_name: str
-    parent_email: str
-    instrument: str
-    preferred_teacher_id: Optional[int] = None
-    preferred_times: List[str]
-    demo_lesson_required: bool = True
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+### Journey 1: Autonomous Task Execution
+**Given** a valid DevTeamAutomation event payload for a repository with tasks_list.md
+**When** the frontend submits the event to POST /events
+**Then** the API persists the Event and returns 202 with task_id
+**And** Celery processes the Event via DAG workflow and persists results to Event.task_context
+**And** ≥80% of atomic tasks complete end-to-end within SLA timeframes
+**And** artifacts and verification outcomes are available via persisted task_context
+**And** stop-on-error prevents progression when verification fails
 
-class PaymentRequestSchema(BaseModel):
-    """Payment processing request"""
-    student_id: int
-    amount: int  # in cents
-    payment_method_id: str
-    billing_cycle: str
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+### Journey 2: Real-time Progress Monitoring  
+**Given** an active task execution session  
+**When** user connects via WebSocket to /ws/devteam  
+**Then** real-time execution-update events are received within ≤500ms  
+**And** execution-log events provide detailed operation visibility  
+**And** connection automatically recovers from failures with exponential backoff  
+**And** events include customerId for proper frontend routing
 
-class SchedulingRequestSchema(BaseModel):
-    """Lesson scheduling request"""
-    student_id: int
-    teacher_id: int
-    lesson_type: str
-    preferred_times: List[datetime]
-    duration_minutes: int = 30
-    recurring: bool = True
-    metadata: Dict[str, Any] = Field(default_factory=dict)
-```
+### Journey 3: Multi-Customer Project Management
+**Given** multiple customer projects with pending tasks  
+**When** parallel execution requests are submitted  
+**Then** each customer execution runs in isolated working directory  
+**And** progress tracking remains independent per customer  
+**And** WebSocket events are properly routed by customerId  
+**And** resource limits prevent one customer from impacting others  
+**And** minimum 5 concurrent executions are supported
+## API Endpoints Summary
 
-### Output Schemas
-```python
-class WorkflowResultSchema(BaseModel):
-    """Standardized workflow result"""
-    success: bool
-    workflow_name: str
-    execution_time: float
-    nodes_executed: List[str]
-    final_result: Dict[str, Any]
-    error: Optional[str] = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
-```
+Event-Driven API (Primary)
+- **POST /events** - Ingest event (e.g., DEVTEAM_AUTOMATION). Returns 202 with Celery task_id and event_id. See [events_endpoint()](app/api/endpoint.py:43).
+- (Internal) Celery Worker executes [process_incoming_event()](app/worker/tasks.py:19) → [Workflow.run()](app/core/workflow.py:105). Results are persisted to [Event.task_context](app/database/event.py:13).
 
-## API Integration Patterns
+Core Runner API
+- **GET /health** - Service health and dependency validation
+- **POST /prep** - Repository preparation and branch creation
+- **POST /implement** - Task implementation using specified tool
+- **POST /verify** - Task verification against quality criteria
+- **GET /tasks/next** - Task selection with dependency resolution
+- **WS /ws/devteam** - Real-time progress and log streaming
 
-### FastAPI + Workflow Integration
-```python
-@app.post("/api/enrollments/process")
-async def process_enrollment(
-    enrollment_data: EnrollmentRequestSchema,
-    background_tasks: BackgroundTasks
-) -> Dict[str, Any]:
-    """Process enrollment through workflow"""
-    
-    # Quick validation and immediate response
-    if not enrollment_data.student_name or not enrollment_data.parent_email:
-        raise HTTPException(status_code=400, detail="Missing required fields")
-    
-    # Trigger workflow asynchronously
-    workflow = EnrollmentWorkflow()
-    background_tasks.add_task(
-        execute_enrollment_workflow,
-        workflow,
-        enrollment_data.dict()
-    )
-    
-    return {
-        "success": True,
-        "message": "Enrollment processing started",
-        "enrollment_id": generate_enrollment_id(),
-        "estimated_completion": "2-5 minutes"
-    }
+DevTeam Automation API
+- **POST /api/devteam/automation/initialize** - Start autonomous execution for a project (optional stopPoint)
+- **GET /api/devteam/automation/status/{projectId}** - Current automation status and progress
+- **POST /api/devteam/automation/pause/{projectId}** - Pause automation
+- **POST /api/devteam/automation/resume/{projectId}** - Resume automation
+- **POST /api/devteam/automation/stop/{projectId}** - Stop automation
+- **POST /api/devteam/repository/validate** - Validate repository URL/permissions and task list
+- **GET /api/devteam/repository/tasks/{projectId}** - Read parsed task list
+- **PUT /api/devteam/repository/tasks/{projectId}/{taskId}** - Update task status/metadata
+- **GET /api/devteam/errors/{executionId}/{errorId}** - Retrieve error context/details
+- **POST /api/devteam/tasks/inject** - Inject a task (priority|replace|positional)
+- **GET /api/devteam/executions/active/{userId}** - List active executions for user
+- **GET /api/devteam/executions/history/{userId}?limit={n}** - Execution history
 
-async def execute_enrollment_workflow(workflow: EnrollmentWorkflow, event_data: dict):
-    """Execute enrollment workflow in background"""
-    try:
-        result = await workflow.run_async(event_data)
-        # Handle workflow completion
-        await notify_enrollment_completion(result)
-    except Exception as e:
-        # Handle workflow failure
-        await handle_enrollment_failure(event_data, str(e))
-```
+Notes
+- All state-changing endpoints are idempotent via Idempotency-Key header
+- WebSocket events include projectId and executionId for routing
 
-### Workflow Status Tracking
-```python
-@app.get("/api/workflows/{workflow_id}/status")
-async def get_workflow_status(workflow_id: str) -> WorkflowStatusSchema:
-    """Get workflow execution status"""
-    
-    # Quick status lookup from Redis/database
-    status = await get_workflow_status_from_cache(workflow_id)
-    
-    return WorkflowStatusSchema(
-        workflow_id=workflow_id,
-        status=status.status,
-        progress=status.progress,
-        current_node=status.current_node,
-        estimated_completion=status.estimated_completion,
-        results=status.partial_results
-    )
-```
+## Success Metrics
 
-## Performance and Scalability
+- **Autonomous Completion Rate**: ≥80% of atomic tasks completed end-to-end without human intervention
+- **Performance Compliance**: 95% of operations meet SLA timeframes (≤2s prep, ≤30s implement, ≤60s verify)
+- **System Reliability**: 99.9% uptime with comprehensive error handling and recovery
+- **Real-time Responsiveness**: WebSocket events delivered within ≤500ms latency
+- **Multi-customer Support**: Successful parallel execution of minimum 5 customer projects
 
-### Response Time Targets
-- **Quick APIs:** <200ms (95th percentile)
-  - Student/teacher lookups
-  - Payment history
-  - Basic scheduling queries
-  
-- **Workflow APIs:** <2s (95th percentile)
-  - Enrollment processing
-  - Payment workflows
-  - Complex scheduling
-  
-- **Background Workflows:** <30s completion
-  - Email processing
-  - Report generation
-  - Bulk operations
+## Constraints and Assumptions
 
-### Scalability Architecture
-```python
-# Horizontal scaling through stateless design
-class WorkflowExecutor:
-    """Stateless workflow executor for horizontal scaling"""
-    
-    def __init__(self, redis_client: Redis, db_session: AsyncSession):
-        self.redis = redis_client
-        self.db = db_session
-    
-    async def execute_workflow(self, workflow_name: str, event_data: dict):
-        """Execute workflow with full state persistence"""
-        workflow = get_workflow_by_name(workflow_name)
-        
-        # All state stored in Redis/DB, not in memory
-        task_context = await self.load_or_create_context(event_data)
-        
-        result = await workflow.run_async(event_data, context=task_context)
-        
-        await self.persist_workflow_result(result)
-        return result
-```
+### Technical Constraints
+- Python/FastAPI technology stack (non-negotiable)
+- Event ingestion via POST /events with Celery+Redis asynchronous processing
+- DAG workflows executed via GenAI Launchpad engine ([Workflow.run()](app/core/workflow.py:105))
+- Supabase PostgreSQL for Event persistence; Redis as Celery broker/backend
+- Alembic migrations applied before runtime (e.g., docker-compose exec api alembic upgrade head)
+- Docker containerization required
+- Phase 1 limited to Aider tool integration
+- Stop-on-error semantics for MVP
 
-## Deployment and Infrastructure
+### Business Constraints  
+- 4-week delivery timeline for MVP
+- Integration with existing Clarity CRM Frontend DevTeam interface
+- Must support existing Git repository structures and workflows
 
-### Docker Configuration
-```dockerfile
-# Multi-stage build for GenAI Launchpad + Cedar Heights
-FROM python:3.11-slim as base
-
-# Install dependencies
-COPY pyproject.toml uv.lock ./
-RUN pip install uv && uv sync --frozen
-
-# Copy application code
-COPY app/ ./app/
-COPY ai_docs/ ./ai_docs/
-
-# Production stage
-FROM base as production
-ENV ENVIRONMENT=production
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-
-### Environment Configuration
-```yaml
-# docker-compose.yml
-version: '3.8'
-services:
-  api:
-    build:
-      context: .
-      target: production
-    environment:
-      - DATABASE_URL=${SUPABASE_DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
-    depends_on:
-      - redis
-      - celery-worker
-
-  celery-worker:
-    build:
-      context: .
-      target: production
-    command: celery -A app.worker.tasks worker --loglevel=info
-    environment:
-      - DATABASE_URL=${SUPABASE_DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
-    depends_on:
-      - redis
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-```
-
-## Testing Strategy
-
-### Workflow Testing
-```python
-@pytest.mark.asyncio
-async def test_enrollment_workflow():
-    """Test complete enrollment workflow"""
-    
-    # Setup
-    workflow = EnrollmentWorkflow()
-    test_event = {
-        "student_name": "John Doe",
-        "parent_email": "parent@example.com",
-        "instrument": "piano",
-        "demo_lesson_required": True
-    }
-    
-    # Execute
-    result = await workflow.run_async(test_event)
-    
-    # Validate workflow completion
-    assert result.success is True
-    assert "ValidateEnrollmentNode" in result.nodes
-    assert "ScheduleDemoLessonNode" in result.nodes
-    assert result.nodes["ScheduleDemoLessonNode"]["demo_scheduled"] is True
-
-@pytest.mark.asyncio
-async def test_payment_workflow_failure_handling():
-    """Test payment workflow with Stripe failure"""
-    
-    workflow = PaymentProcessingWorkflow()
-    test_event = {
-        "student_id": 1,
-        "amount": 5000,  # $50.00
-        "payment_method_id": "pm_card_declined"
-    }
-    
-    # Mock Stripe failure
-    with patch('stripe.PaymentIntent.create') as mock_create:
-        mock_create.side_effect = StripeError("Card declined")
-        
-        result = await workflow.run_async(test_event)
-        
-        # Validate failure handling
-        assert result.success is False
-        assert "PaymentFailureNode" in result.nodes
-        assert result.nodes["PaymentFailureNode"]["retry_scheduled"] is True
-```
-
-### API Integration Testing
-```python
-@pytest.mark.asyncio
-async def test_enrollment_api_workflow_integration():
-    """Test API endpoint triggering workflow"""
-    
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        response = await ac.post("/api/enrollments/process", json={
-            "student_name": "Jane Doe",
-            "parent_email": "jane@example.com",
-            "instrument": "violin"
-        })
-    
-    assert response.status_code == 200
-    data = response.json()
-    assert data["success"] is True
-    assert "enrollment_id" in data
-    
-    # Verify workflow was triggered
-    # (Implementation depends on workflow tracking system)
-```
-
-## Risk Assessment and Mitigation
-
-### High-Priority Risks
-
-#### 1. Workflow Complexity Management
-- **Risk:** Complex workflows becoming difficult to debug and maintain
-- **Impact:** Medium - Development velocity reduction
-- **Mitigation:**
-  - Comprehensive workflow visualization tools
-  - Extensive logging and monitoring at each node
-  - Clear workflow documentation and testing
-  - Modular node design for reusability
-
-#### 2. Performance Under Load
-- **Risk:** Workflow orchestration overhead affecting performance
-- **Impact:** Medium - User experience degradation
-- **Mitigation:**
-  - Hybrid quick API + workflow approach
-  - Comprehensive performance testing
-  - Redis caching for workflow state
-  - Horizontal scaling capabilities
-
-#### 3. External Service Dependencies
-- **Risk:** Stripe, Supabase, or email service failures
-- **Impact:** High - Business process interruption
-- **Mitigation:**
-  - Circuit breaker patterns in workflow nodes
-  - Comprehensive retry logic with exponential backoff
-  - Dead letter queues for failed operations
-  - Graceful degradation strategies
-
-## Success Criteria and Acceptance Criteria
-
-### MVP Launch Criteria
-- [ ] GenAI Launchpad framework integrated and operational
-- [ ] Core workflows implemented (enrollment, payment, scheduling)
-- [ ] Quick APIs delivering <200ms response times
-- [ ] Workflow APIs completing within <2s
-- [ ] Comprehensive error handling and logging
-- [ ] Type safety enforced across all workflows and APIs
-- [ ] Supabase integration with RLS policies
-- [ ] Stripe payment processing workflows
-- [ ] Email notification workflows
-- [ ] Docker deployment on Hetzner infrastructure
-- [ ] >90% test coverage including workflow testing
-- [ ] API documentation with OpenAPI/Swagger
-- [ ] Monitoring and alerting operational
-
-### Production Readiness Criteria
-- [ ] All complex business processes automated through workflows
-- [ ] Performance targets met under load testing
-- [ ] Security audit passed with no critical vulnerabilities
-- [ ] PIPEDA compliance validated
-- [ ] Disaster recovery procedures tested
-- [ ] 24/7 monitoring and alerting configured
-- [ ] Documentation complete for development and operations
-- [ ] Business continuity plan validated
-
-### Business Impact Validation
-- [ ] 60% reduction in administrative overhead achieved
-- [ ] Frontend integration completed with all required APIs
-- [ ] User acceptance testing passed for all user roles
-- [ ] Financial accuracy validated (100% payment reconciliation)
-- [ ] System reliability demonstrated (99.9% uptime)
-
-## Future Roadmap
-
-### Phase 2: Advanced Workflow Features (Months 7-12)
-- **AI-Powered Scheduling:** Intelligent scheduling optimization using GenAI
-- **Predictive Analytics:** Student retention and revenue forecasting workflows
-- **Advanced Reporting:** Complex report generation through workflow orchestration
-- **Multi-School Support:** Tenant-aware workflows for multiple music schools
-
-### Phase 3: Ecosystem Expansion (Year 2)
-- **Workflow Marketplace:** Reusable workflow templates for music schools
-- **Mobile API Optimization:** Mobile-specific workflow patterns
-- **Integration Hub:** Third-party service integration workflows
-- **Advanced Analytics:** Machine learning-powered business insights
-
----
-
-*This synthesized PRD demonstrates how the GenAI Launchpad workflow orchestration framework serves as the foundation for building the Cedar Heights Music Academy backend system, providing both the technical architecture and business process automation needed for a successful music school management platform.*
+### Assumptions
+- Target repositories contain properly formatted tasks_list.md files
+- Aider tool remains stable and available for implementation
+- Git repositories are accessible with provided authentication
+- Frontend DevTeam interface handles WebSocket connection management
+- Customer projects follow standard development practices (testing, documentation)
