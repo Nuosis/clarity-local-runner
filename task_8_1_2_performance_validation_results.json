@@ -1,0 +1,20 @@
+{
+  "test_timestamp": "2025-09-17 12:45:35",
+  "performance_requirement_ms": 200,
+  "num_test_iterations": 10,
+  "overall_pass": false,
+  "results": {
+    "health_endpoint": {
+      "url": "http://localhost:8090/health",
+      "response_times": [],
+      "success_count": 0,
+      "error_count": 10
+    },
+    "status_endpoint": {
+      "url": "http://localhost:8090/api/v1/devteam-automation/status",
+      "response_times": [],
+      "success_count": 0,
+      "error_count": 10
+    }
+  }
+}

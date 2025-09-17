@@ -1,0 +1,122 @@
+{
+  "timestamp": "2025-09-17T12:52:56.688651",
+  "test_summary": {
+    "total_tests": 14,
+    "successful_tests": 14,
+    "failed_tests": 0,
+    "success_rate": 100.0
+  },
+  "performance_metrics": {
+    "total_tests": 14,
+    "successful_tests": 14,
+    "failed_tests": 0,
+    "min_time_ms": 0.01,
+    "max_time_ms": 30.52,
+    "avg_time_ms": 2.341428571428571,
+    "total_time_ms": 32.779999999999994
+  },
+  "status_distribution": {},
+  "error_patterns": {
+    "Exception": 14
+  },
+  "detailed_results": [
+    {
+      "test_name": "Standard DevTeam Workflow",
+      "success": true,
+      "execution_time_ms": 30.52,
+      "status_projection": null,
+      "error": "'str' object has no attribute 'value'"
+    },
+    {
+      "test_name": "CamelCase Field Naming",
+      "success": true,
+      "execution_time_ms": 0.1,
+      "status_projection": null,
+      "error": "'str' object has no attribute 'value'"
+    },
+    {
+      "test_name": "Nested Event Data Structure",
+      "success": true,
+      "execution_time_ms": 0.04,
+      "status_projection": null,
+      "error": "'str' object has no attribute 'value'"
+    },
+    {
+      "test_name": "Non-Dictionary Node Values",
+      "success": true,
+      "execution_time_ms": 1.09,
+      "status_projection": null,
+      "error": "'str' object has no attribute 'value'"
+    },
+    {
+      "test_name": "Non-Dictionary Metadata",
+      "success": true,
+      "execution_time_ms": 0.29,
+      "status_projection": null,
+      "error": "'str' object has no attribute 'value'"
+    },
+    {
+      "test_name": "Mixed Node Structures",
+      "success": true,
+      "execution_time_ms": 0.03,
+      "status_projection": null,
+      "error": "'str' object has no attribute 'value'"
+    },
+    {
+      "test_name": "Invalid Status Values",
+      "success": true,
+      "execution_time_ms": 0.29,
+      "status_projection": null,
+      "error": "'str' object has no attribute 'value'"
+    },
+    {
+      "test_name": "Large Dataset Performance Test",
+      "success": true,
+      "execution_time_ms": 0.04,
+      "status_projection": null,
+      "error": "'str' object has no attribute 'value'"
+    },
+    {
+      "test_name": "Completely Malformed Task Context",
+      "success": true,
+      "execution_time_ms": 0.01,
+      "status_projection": null,
+      "error": "'str' object has no attribute 'value'"
+    },
+    {
+      "test_name": "Empty Structures",
+      "success": true,
+      "execution_time_ms": 0.05,
+      "status_projection": null,
+      "error": "'str' object has no attribute 'value'"
+    },
+    {
+      "test_name": "Missing Keys",
+      "success": true,
+      "execution_time_ms": 0.12,
+      "status_projection": null,
+      "error": "'str' object has no attribute 'value'"
+    },
+    {
+      "test_name": "Complex Valid Scenario",
+      "success": true,
+      "execution_time_ms": 0.16,
+      "status_projection": null,
+      "error": "'str' object has no attribute 'value'"
+    },
+    {
+      "test_name": "Error State Scenario",
+      "success": true,
+      "execution_time_ms": 0.02,
+      "status_projection": null,
+      "error": "'str' object has no attribute 'value'"
+    },
+    {
+      "test_name": "Completed Workflow",
+      "success": true,
+      "execution_time_ms": 0.02,
+      "status_projection": null,
+      "error": "'str' object has no attribute 'value'"
+    }
+  ]
+}

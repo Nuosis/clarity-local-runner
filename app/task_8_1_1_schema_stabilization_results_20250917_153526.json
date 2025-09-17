@@ -1,0 +1,119 @@
+{
+  "success": false,
+  "passed": 14,
+  "total": 15,
+  "duration_ms": 24.19590950012207,
+  "failed_tests": [
+    {
+      "name": "Malformed nodes (non-dict)",
+      "error": "TaskContextTransformationError: [TASKCONTEXTTRANSFORMATIONERROR] Failed to create valid StatusProjection: 1 validation error for StatusProjection\n  Value error, IDLE status should not have a current task [type=value_error, input_value={'execution_id': 'test-ex...17, 15, 35, 26, 666329)}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/value_error"
+    }
+  ],
+  "results": [
+    {
+      "name": "Snake_case field handling",
+      "passed": true,
+      "duration_ms": 20.53213119506836,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "CamelCase field handling",
+      "passed": true,
+      "duration_ms": 0.14495849609375,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Nested event_data handling",
+      "passed": true,
+      "duration_ms": 0.06937980651855469,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Mixed schema variations",
+      "passed": true,
+      "duration_ms": 0.05507469177246094,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Malformed task_context (None)",
+      "passed": true,
+      "duration_ms": 0.3325939178466797,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Malformed task_context (non-dict)",
+      "passed": true,
+      "duration_ms": 0.08034706115722656,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Malformed metadata (non-dict)",
+      "passed": true,
+      "duration_ms": 0.2613067626953125,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Malformed nodes (non-dict)",
+      "passed": false,
+      "duration_ms": 1.3878345489501953,
+      "error": "TaskContextTransformationError: [TASKCONTEXTTRANSFORMATIONERROR] Failed to create valid StatusProjection: 1 validation error for StatusProjection\n  Value error, IDLE status should not have a current task [type=value_error, input_value={'execution_id': 'test-ex...17, 15, 35, 26, 666329)}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/value_error",
+      "details": null
+    },
+    {
+      "name": "Invalid node structures",
+      "passed": true,
+      "duration_ms": 0.16260147094726562,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Invalid status values",
+      "passed": true,
+      "duration_ms": 0.07081031799316406,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Empty structures",
+      "passed": true,
+      "duration_ms": 0.06008148193359375,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Performance with large dataset",
+      "passed": true,
+      "duration_ms": 0.6368160247802734,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Utility functions",
+      "passed": true,
+      "duration_ms": 0.035762786865234375,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Backward compatibility",
+      "passed": true,
+      "duration_ms": 0.09322166442871094,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Error recovery and logging",
+      "passed": true,
+      "duration_ms": 0.05984306335449219,
+      "error": null,
+      "details": null
+    }
+  ]
+}

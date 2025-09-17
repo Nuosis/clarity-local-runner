@@ -1,0 +1,81 @@
+{
+  "performance_requirements": {
+    "test_exists": true,
+    "requirement_tested": true,
+    "performance_monitoring": 6,
+    "artifact_capture_timing": true,
+    "resource_management": 4,
+    "db_write_sla_support": 4,
+    "meets_30s_requirement": true,
+    "status": "PASSED"
+  },
+  "security_requirements": {
+    "input_validation_exists": true,
+    "file_path_validation_patterns": 4,
+    "directory_traversal_prevention": 2,
+    "audit_logging_patterns": 6,
+    "secret_redaction_indicators": 5,
+    "process_isolation": true,
+    "security_error_handling": 3,
+    "audit_trail_patterns": 5,
+    "status": "PASSED"
+  },
+  "testing_requirements": {
+    "test_count": 33,
+    "files_modified_tests": 13,
+    "artifact_tests": 2,
+    "integration_tests": 1,
+    "error_tests": 12,
+    "performance_tests": 1,
+    "validation_tests": 7,
+    "files_assertions": 20,
+    "assertion_count": 115,
+    "estimated_coverage": 95,
+    "meets_coverage_requirement": true,
+    "status": "PASSED"
+  },
+  "reliability_requirements": {
+    "error_handling_patterns": 6,
+    "graceful_degradation_patterns": 4,
+    "idempotency_patterns": 4,
+    "resource_management_patterns": 5,
+    "error_message_validations": 17,
+    "recovery_mechanisms": 3,
+    "files_resilience_patterns": 3,
+    "status": "PASSED"
+  },
+  "file_system_requirements": {
+    "modified_detection": true,
+    "created_detection": true,
+    "deleted_detection": true,
+    "path_validation_patterns": 4,
+    "supports_various_file_types": true,
+    "directory_traversal_prevention": 4,
+    "file_handle_management": 3,
+    "status": "PASSED"
+  },
+  "files_modified_capture_functionality": {
+    "source_file_exists": true,
+    "method_exists": true,
+    "signature_correct": true,
+    "patterns_constant_exists": true,
+    "regex_patterns": 6,
+    "extraction_logic": 4,
+    "path_cleaning": 3,
+    "result_field_patterns": 3,
+    "count_logging": true,
+    "graceful_empty_handling": 3,
+    "status": "PASSED"
+  },
+  "overall_compliance": true,
+  "compliance_percentage": 100.0,
+  "task_compliance": {
+    "files_modified_capture": true,
+    "file_detection_accuracy": true,
+    "performance_30s": true,
+    "security_validation": true,
+    "test_coverage_80": true,
+    "error_recovery": true
+  },
+  "task_compliance_score": 100.0
+}

@@ -3,7 +3,7 @@
 ## Context Analysis
 - **Frontend Charter**: DevTeam feature for Clarity CRM Frontend with autonomous task execution
 - **Implementation Guide**: Backend service requirements for task automation
-- **Existing Core Docs**: Music academy system (different project - need to replace)
+- **Existing Core Docs**: Workflow orchestration system documentation
 
 ## Key Requirements Extracted
 - **Value Prop**: Local runner service for automated development task execution

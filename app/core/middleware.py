@@ -1,5 +1,5 @@
 """
-Middleware for Cedar Heights Music Academy API.
+Middleware for Clarity Local Runner API.
 """
 
 import logging
@@ -18,14 +18,14 @@ from .exceptions import (
     # AuthenticationError,
     # AuthorizationError,
     # BusinessRuleError,
-    CedarHeightsException,
+    ClarityRunnerException,
     # ConflictError,
     # DatabaseError,
     # ExternalServiceError,
     # NotFoundError,
-    # PaymentError,
+    # TaskExecutionError,
     # RateLimitError,
-    # SchedulingError,
+    # ContainerError,
     # WorkflowError,
 )
 
@@ -64,7 +64,7 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
         )
 
         # Handle custom exceptions
-        if isinstance(exc, CedarHeightsException):
+        if isinstance(exc, ClarityRunnerException):
             return self._create_error_response(
                 message=exc.message,
                 error_code=exc.error_code,

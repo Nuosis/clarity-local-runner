@@ -16,6 +16,9 @@
 - **Dependency Injection**: Use dependency injection to improve testability and maintainability
 - **Interface-Based Design**: Program to interfaces, not implementations
 - **Modular Architecture**: Create loosely coupled, highly cohesive modules
+- **Imports Statements must be valid for Docker** Therefore do not include app. in the import statements:
+    - (WRONG) from app.services.repository_cache_manager import RepositoryCacheManager, get_repository_cache_manager
+    - (CORRECT) from services.repository_cache_manager import RepositoryCacheManager, get_repository_cache_manager
 
 ## Development Standards
 

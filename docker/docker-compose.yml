@@ -1,5 +1,5 @@
 include:
-  - path: ./docker-compose.launchpad.yml
+  - path: ./docker-compose.clarity-local.yml
   - path: ./docker-compose.supabase.yml
 
 # networks:

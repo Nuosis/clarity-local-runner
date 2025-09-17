@@ -1,0 +1,46 @@
+{
+  "performance_requirements": {
+    "test_exists": true,
+    "requirement_tested": true,
+    "performance_monitoring": 6,
+    "timeout_handling": true,
+    "meets_30s_requirement": true,
+    "status": "PASSED"
+  },
+  "security_requirements": {
+    "input_validation_exists": true,
+    "validation_patterns": 5,
+    "audit_logging_patterns": 5,
+    "secret_redaction_exists": true,
+    "container_isolation": true,
+    "security_error_handling": 3,
+    "status": "PASSED"
+  },
+  "testing_requirements": {
+    "test_count": 33,
+    "artifact_tests": 2,
+    "diff_tests": 2,
+    "integration_tests": 1,
+    "error_tests": 12,
+    "performance_tests": 1,
+    "validation_tests": 7,
+    "assertion_count": 115,
+    "estimated_coverage": 95,
+    "meets_coverage_requirement": true,
+    "status": "PASSED"
+  },
+  "reliability_requirements": {},
+  "diff_capture_functionality": {
+    "source_file_exists": true,
+    "method_exists": true,
+    "signature_correct": true,
+    "git_diff_command_present": true,
+    "artifacts_captured": true,
+    "file_patterns_implemented": true,
+    "commit_hash_capture": true,
+    "graceful_error_handling": true,
+    "status": "PASSED"
+  },
+  "overall_compliance": false,
+  "validation_error": "Insufficient recovery mechanisms. Found 0, expected \u22652"
+}

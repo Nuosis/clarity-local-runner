@@ -1,0 +1,157 @@
+{
+  "summary": {
+    "total_tests": 8,
+    "passed_tests": 8,
+    "failed_tests": 0,
+    "success_rate": 1.0,
+    "total_execution_time": 0.019,
+    "validation_timestamp": "2025-09-17T01:16:22.509613Z",
+    "category_scores": {
+      "prd_compliance_tests": {
+        "passed": 1,
+        "total": 1,
+        "score": 1.0
+      },
+      "performance_tests": {
+        "passed": 1,
+        "total": 1,
+        "score": 1.0
+      },
+      "websocket_integration_tests": {
+        "passed": 1,
+        "total": 1,
+        "score": 1.0
+      },
+      "logging_tests": {
+        "passed": 1,
+        "total": 1,
+        "score": 1.0
+      },
+      "metadata_tracking_tests": {
+        "passed": 1,
+        "total": 1,
+        "score": 1.0
+      },
+      "backward_compatibility_tests": {
+        "passed": 1,
+        "total": 1,
+        "score": 1.0
+      },
+      "error_handling_tests": {
+        "passed": 1,
+        "total": 1,
+        "score": 1.0
+      },
+      "container_cleanup_tests": {
+        "passed": 1,
+        "total": 1,
+        "score": 1.0
+      }
+    },
+    "prd_add_compliance": 1.0
+  },
+  "detailed_results": {
+    "prd_compliance_tests": [
+      {
+        "test_name": "prd_line_81_compliance",
+        "success": true,
+        "details": {
+          "retry_limit_validation_exists": true,
+          "prd_references_found": 3,
+          "max_attempts_enforcement": 1,
+          "retry_methods_found": 2,
+          "all_retry_methods_present": true
+        },
+        "errors": []
+      }
+    ],
+    "performance_tests": [
+      {
+        "test_name": "performance_requirements",
+        "success": true,
+        "details": {
+          "timeout_references": 3,
+          "performance_monitoring_patterns": 3,
+          "efficiency_indicators": 2
+        },
+        "errors": []
+      }
+    ],
+    "websocket_integration_tests": [
+      {
+        "test_name": "websocket_latency_integration",
+        "success": true,
+        "details": {
+          "websocket_integration_patterns": 0,
+          "latency_considerations": 0,
+          "non_blocking_indicators": 0,
+          "websocket_compatibility_maintained": true
+        },
+        "errors": []
+      }
+    ],
+    "logging_tests": [
+      {
+        "test_name": "structured_logging_correlation_id",
+        "success": true,
+        "details": {
+          "correlation_propagation_patterns": 4,
+          "logging_calls_count": 176,
+          "retry_logging_patterns": 6
+        },
+        "errors": []
+      }
+    ],
+    "metadata_tracking_tests": [
+      {
+        "test_name": "retry_metadata_tracking",
+        "success": true,
+        "details": {
+          "has_attempt_count": true,
+          "has_retry_attempts": true,
+          "has_final_attempt": true,
+          "metadata_tracking_patterns": 3,
+          "all_metadata_fields_present": true
+        },
+        "errors": []
+      }
+    ],
+    "backward_compatibility_tests": [
+      {
+        "test_name": "backward_compatibility",
+        "success": true,
+        "details": {
+          "original_methods_preserved": 3,
+          "compatibility_indicators": 2,
+          "additive_indicators": 2
+        },
+        "errors": []
+      }
+    ],
+    "error_handling_tests": [
+      {
+        "test_name": "comprehensive_error_handling",
+        "success": true,
+        "details": {
+          "exception_handling_patterns": 66,
+          "error_propagation_patterns": 4,
+          "degradation_indicators": 1
+        },
+        "errors": []
+      }
+    ],
+    "container_cleanup_tests": [
+      {
+        "test_name": "container_cleanup",
+        "success": true,
+        "details": {
+          "cleanup_method_exists": true,
+          "cleanup_invocations": 21,
+          "timing_indicators": 2,
+          "resource_management_patterns": 3
+        },
+        "errors": []
+      }
+    ]
+  }
+}

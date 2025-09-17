@@ -1,5 +1,5 @@
 """
-Common Pydantic schemas and response models for Cedar Heights Music Academy API.
+Common Pydantic schemas and response models for Clarity Local Runner API.
 """
 
 from datetime import datetime

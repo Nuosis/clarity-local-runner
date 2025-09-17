@@ -1,8 +1,8 @@
 """
-Authentication module for Cedar Heights Music Academy.
+Authentication module for Clarity Local Runner.
 
 This module provides Supabase JWT authentication with role-based authorization
-for the music school management system.
+for the workflow orchestration system.
 """
 
 from .dependencies import (

@@ -298,6 +298,6 @@ def validate_list_response(response_data: Dict) -> bool:
 
 
 if __name__ == "__main__":
-    print("🚀 Cedar Heights Music Academy - API Test Framework")
+    print("🚀 Clarity Local Runner - API Test Framework")
     print("This framework provides utilities for testing the API endpoints.")
     print("Import this module to use the APITestFramework class in your tests.")

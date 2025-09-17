@@ -1,19 +1,14 @@
 """
-Main API router for Cedar Heights Music Academy v1.
+Main API router for Clarity Local Runner workflow orchestration system v1.
 """
 
 from fastapi import APIRouter
 
 from .endpoints import (
-    academic,
     health,
-    lessons,
-    payments,
     public,
-    settings,
-    stripe_webhooks,
-    students,
-    teachers,
+    devteam_automation,
+    websocket,
 )
 
 api_router = APIRouter()
@@ -24,23 +19,22 @@ api_router.include_router(health.router, prefix="/health", tags=["health"])
 # Public endpoints (no authentication required)
 api_router.include_router(public.router, prefix="/public", tags=["public"])
 
-# Student management endpoints
-api_router.include_router(students.router, prefix="/students", tags=["students"])
+# DevTeam automation endpoints
+api_router.include_router(
+    devteam_automation.router,
+    prefix="/devteam/automation",
+    tags=["devteam-automation"]
+)
 
-# Teacher management endpoints
-api_router.include_router(teachers.router, prefix="/teachers", tags=["teachers"])
+# WebSocket endpoints
+api_router.include_router(
+    websocket.router,
+    prefix="/ws",
+    tags=["websocket"]
+)
 
-# Lesson management endpoints
-api_router.include_router(lessons.router, prefix="/lessons", tags=["lessons"])
-
-# Payment management endpoints
-api_router.include_router(payments.router, prefix="/payments", tags=["payments"])
-
-# Academic calendar management endpoints
-api_router.include_router(academic.router, prefix="/academic", tags=["academic"])
-
-# System settings management endpoints
-api_router.include_router(settings.router, prefix="/settings", tags=["settings"])
-
-# Stripe webhook endpoints (no authentication required for webhooks)
-api_router.include_router(stripe_webhooks.router, prefix="/webhooks", tags=["webhooks"])
+# TODO: Add additional workflow orchestration endpoints as they are implemented
+# - Workflow execution endpoints
+# - Task management endpoints
+# - Container orchestration endpoints
+# - Repository management endpoints

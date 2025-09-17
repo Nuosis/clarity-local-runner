@@ -1,0 +1,140 @@
+---
+description: Aider-focused code change instruction template for deterministic prompt generation
+author: Clarity Local Runner - Deterministic Prompt Service
+version: 1.0.0
+template_type: aider_code_change
+---
+
+# Code Change Instructions for Aider
+
+## Task Context
+- **Task ID**: {{ task_id }}
+- **Project ID**: {{ project_id }}
+- **Execution ID**: {{ execution_id }}
+- **Correlation ID**: {{ correlation_id }}
+- **Generated**: {{ generation_timestamp }}
+
+## Task Details
+- **Description**: {{ task_description }}
+- **Type**: {{ task_type }}
+- **Priority**: {{ task_priority }}
+- **Current Node**: {{ current_node }}
+- **Workflow Status**: {{ workflow_status }}
+- **User**: {{ user_id }}
+
+## Repository Context
+{% if repository_url %}
+- **Repository**: {{ repository_url }}
+- **Branch**: {{ repository_branch }}
+{% if repository_path %}
+- **Local Path**: {{ repository_path }}
+- **Repository Size**: {{ repository_size_bytes }} bytes
+- **File Count**: {{ repository_file_count }} files
+- **Last Updated**: {{ repository_last_updated or 'Unknown' }}
+- **Repository Valid**: {{ 'Yes' if repository_is_valid else 'No' }}
+{% else %}
+- **Status**: Repository not cached locally
+{% endif %}
+{% else %}
+- **Repository**: Not specified
+{% endif %}
+
+## Files to Modify
+{% if files_to_modify and files_count > 0 %}
+The following {{ files_count }} file(s) need to be modified:
+{% for file in files_to_modify %}
+- `{{ file }}`
+{% endfor %}
+{% else %}
+No specific files specified for modification.
+{% endif %}
+
+## Aider Instructions
+
+### Primary Objective
+Implement the code changes described in the task description above. Focus on:
+
+1. **Clean Implementation**: Write readable, maintainable code following established patterns
+2. **Minimal Changes**: Make only the necessary changes to accomplish the task
+3. **Consistency**: Follow existing code style and architectural patterns
+4. **Testing**: Ensure changes are testable and don't break existing functionality
+
+### Implementation Guidelines
+
+#### Code Quality Standards
+- Follow SOLID principles and established design patterns
+- Write self-documenting code with clear variable and function names
+- Add appropriate comments for complex logic
+- Ensure proper error handling and validation
+
+#### Security Considerations
+- Validate all inputs and sanitize outputs
+- Follow principle of least privilege
+- Avoid hardcoded secrets or sensitive information
+- Use secure defaults for all configurations
+
+#### Performance Requirements
+- Optimize for readability first, performance second
+- Consider memory usage and resource management
+- Implement appropriate caching where beneficial
+- Ensure operations complete within reasonable time limits
+
+### Specific Instructions
+
+{% if task_type == 'atomic' %}
+This is an atomic task that should be completed as a single, focused change.
+{% elif task_type == 'composite' %}
+This is a composite task that may involve multiple related changes.
+{% endif %}
+
+{% if task_priority == 'high' %}
+**HIGH PRIORITY**: This task requires immediate attention and careful implementation.
+{% elif task_priority == 'medium' %}
+**MEDIUM PRIORITY**: This task should be implemented with standard care and attention.
+{% elif task_priority == 'low' %}
+**LOW PRIORITY**: This task can be implemented when convenient, but still requires quality work.
+{% endif %}
+
+### Implementation Steps
+
+1. **Analysis Phase**
+   - Review the existing codebase structure
+   - Identify the specific files and functions that need modification
+   - Understand the current implementation patterns
+
+2. **Planning Phase**
+   - Plan the minimal set of changes required
+   - Consider impact on existing functionality
+   - Identify any dependencies or prerequisites
+
+3. **Implementation Phase**
+   - Make the necessary code changes
+   - Follow established coding standards and patterns
+   - Ensure proper error handling and validation
+
+4. **Validation Phase**
+   - Test the changes locally if possible
+   - Verify that existing functionality is not broken
+   - Ensure the implementation meets the task requirements
+
+### Additional Context
+{% if metadata and metadata|length > 0 %}
+**Metadata**:
+{% for key, value in metadata.items() %}
+- {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+
+### Notes for Aider
+- Use the repository context above to understand the project structure
+- Focus on making targeted, surgical changes rather than broad refactoring
+- Preserve existing code style and patterns unless specifically asked to change them
+- If the task description is unclear, implement the most reasonable interpretation
+- Ensure all changes are compatible with the existing codebase architecture
+
+---
+
+**End of Instructions**
+
+This prompt was generated deterministically by the Clarity Local Runner Deterministic Prompt Service.
+Context Hash: Generated dynamically based on input parameters.

@@ -1,0 +1,52 @@
+{
+  "performance_requirements": {
+    "test_exists": true,
+    "requirement_tested": true,
+    "performance_monitoring": 6,
+    "websocket_support": true,
+    "timeout_handling": true,
+    "meets_30s_requirement": true,
+    "meets_500ms_websocket_requirement": true,
+    "status": "PASSED"
+  },
+  "security_requirements": {
+    "input_validation_exists": true,
+    "validation_patterns": 5,
+    "audit_logging_patterns": 5,
+    "secret_redaction_indicators": 7,
+    "output_sanitization_patterns": 3,
+    "container_isolation": true,
+    "security_error_handling": 3,
+    "audit_trail_patterns": 4,
+    "status": "PASSED"
+  },
+  "testing_requirements": {
+    "test_count": 33,
+    "stdout_tests": 8,
+    "execution_tests": 8,
+    "integration_tests": 1,
+    "error_tests": 12,
+    "performance_tests": 1,
+    "validation_tests": 7,
+    "stdout_assertions": 6,
+    "assertion_count": 115,
+    "estimated_coverage": 95,
+    "meets_coverage_requirement": true,
+    "status": "PASSED"
+  },
+  "reliability_requirements": {},
+  "stdout_capture_functionality": {
+    "source_file_exists": true,
+    "method_exists": true,
+    "signature_correct": true,
+    "container_exec_capture": true,
+    "stdout_processing_patterns": 3,
+    "result_field_patterns": 4,
+    "artifact_integration": 3,
+    "output_monitoring": true,
+    "graceful_handling": 3,
+    "status": "PASSED"
+  },
+  "overall_compliance": false,
+  "validation_error": "Insufficient recovery mechanisms. Found 0, expected \u22652"
+}

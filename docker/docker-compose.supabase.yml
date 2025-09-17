@@ -450,7 +450,7 @@ services:
     image: supabase/supavisor:2.4.14
     restart: unless-stopped
     ports:
-      - ${CLARITY_POSTGRES_PORT:-5433}:5432
+      - ${CLARITY_POSTGRES_PORT:-5433}:5433
       - ${CLARITY_POOLER_PORT:-6544}:6543
     volumes:
       - ./volumes/pooler/pooler.exs:/etc/pooler/pooler.exs:ro,z

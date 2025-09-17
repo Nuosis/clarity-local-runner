@@ -1,11 +1,12 @@
 [project]
-name = "genai-launchpad"
+name = "clarity-local"
 version = "1.0.0"
-description = "GenAI Launchpad by Datalumina"
+description = "clarity-local by Clarity Custom Software"
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.16.4",
     "celery>=5.5.3",
+    "docker>=7.1.0",
     "fastapi>=0.116.1",
     "instructor>=1.8.3",
     "psycopg2-binary>=2.9.10",
@@ -22,6 +23,7 @@ dependencies = [
     "email-validator>=2.0.0",
     "sib-api-v3-sdk>=7.6.0",
     "stripe>=7.0.0",
+    "pytest>=8.4.2",
 ]
 
 [dependency-groups]

@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 
 class UserRole(str, Enum):
-    """User roles in the Cedar Heights Music Academy system."""
+    """User roles in the Clarity Local Runner system."""
 
     ADMIN = "admin"
     TEACHER = "teacher"

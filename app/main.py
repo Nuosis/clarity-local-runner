@@ -36,27 +36,27 @@ logger.info("=== END ENVIRONMENT VARIABLES DEBUG ===")
 
 # Create FastAPI application with enhanced OpenAPI configuration
 app = FastAPI(
-    title="Cedar Heights Music Academy API",
+    title="Clarity Local Runner API",
     description="""
-    ## Cedar Heights Music Academy Management System API
+    ## Clarity Local Runner - DevTeam Workflow Orchestration System
 
-    This API provides comprehensive management capabilities for a music academy including:
+    This API provides comprehensive workflow orchestration capabilities for automated development task execution including:
 
     ### Core Features
-    * **Student Management** - Complete student lifecycle management with enrollment, profiles, and progress tracking
-    * **Teacher Management** - Teacher profiles, availability, and student assignments
-    * **Lesson Scheduling** - Advanced lesson scheduling with conflict detection and availability management
-    * **Payment Processing** - Integrated payment processing with Stripe, subscription management, and billing
-    * **Health Monitoring** - System health checks and performance monitoring
+    * **Workflow Orchestration** - SELECT→PREP→IMPLEMENT→VERIFY pipeline execution
+    * **Task Management** - Automated task selection and execution tracking
+    * **Container Management** - Docker container orchestration for isolated execution environments
+    * **Repository Management** - Git repository operations and task list management
+    * **Real-time Communication** - WebSocket-based progress updates and execution logs
 
     ### Authentication & Security
     * JWT-based authentication via Supabase
-    * Role-based access control (Admin, Teacher, Parent)
+    * Role-based access control
     * Comprehensive audit logging
     * Security headers and CORS protection
 
     ### Performance & Reliability
-    * Response time monitoring (target <200ms)
+    * Response time monitoring (target <500ms)
     * Comprehensive error handling
     * Request/response logging
     * Database connection pooling
@@ -70,12 +70,12 @@ app = FastAPI(
     """,
     version="1.0.0",
     contact={
-        "name": "Cedar Heights Music Academy",
-        "email": "support@cedarheights.academy",
+        "name": "Clarity Local Runner",
+        "email": "support@clarity-runner.local",
     },
     license_info={
         "name": "Private License",
-        "url": "https://cedarheights.academy/license",
+        "url": "https://clarity-runner.local/license",
     },
     openapi_tags=[
         {
@@ -87,20 +87,20 @@ app = FastAPI(
             "description": "Authentication and authorization endpoints",
         },
         {
-            "name": "students",
-            "description": "Student management operations including enrollment, profiles, and progress tracking",
+            "name": "workflows",
+            "description": "Workflow orchestration and execution management",
         },
         {
-            "name": "teachers",
-            "description": "Teacher management operations including profiles, availability, and assignments",
+            "name": "tasks",
+            "description": "Task management and execution tracking",
         },
         {
-            "name": "lessons",
-            "description": "Lesson scheduling and management with conflict detection and status tracking",
+            "name": "containers",
+            "description": "Container orchestration and management",
         },
         {
-            "name": "payments",
-            "description": "Payment processing, subscription management, and billing operations",
+            "name": "repositories",
+            "description": "Repository management and Git operations",
         },
         {
             "name": "public",
@@ -109,11 +109,11 @@ app = FastAPI(
     ],
     servers=[
         {
-            "url": "http://localhost:8000",
+            "url": "http://localhost:8090",
             "description": "Development server",
         },
         {
-            "url": "https://api.cedarheights.academy",
+            "url": "https://api.clarity-runner.local",
             "description": "Production server",
         },
     ],
@@ -131,8 +131,6 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:8080",
-        "https://cedarheightsacademy.com",
-        "https://admin.cedarheightsacademy.com",
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -165,7 +163,7 @@ async def root():
     Returns basic API information and confirms the service is running.
     """
     return {
-        "message": "Cedar Heights Music Academy API",
+        "message": "Clarity Local Runner API",
         "version": "1.0.0",
         "status": "running",
         "docs": "/docs",
@@ -276,19 +274,19 @@ async def global_exception_handler(request: Request, exc: Exception):
 @app.on_event("startup")
 async def startup_event():
     """Application startup event handler."""
-    logger.info("Cedar Heights Music Academy API starting up...")
+    logger.info("Clarity Local Runner API starting up...")
     logger.info("✅ Authentication system initialized")
     logger.info("✅ Middleware stack configured")
     logger.info("✅ API routes registered")
-    logger.info("🚀 Cedar Heights Music Academy API is ready!")
+    logger.info("🚀 Clarity Local Runner API is ready!")
 
 
 # Shutdown event
 @app.on_event("shutdown")
 async def shutdown_event():
     """Application shutdown event handler."""
-    logger.info("Cedar Heights Music Academy API shutting down...")
-    logger.info("👋 Cedar Heights Music Academy API stopped")
+    logger.info("Clarity Local Runner API shutting down...")
+    logger.info("👋 Clarity Local Runner API stopped")
 
 
 if __name__ == "__main__":

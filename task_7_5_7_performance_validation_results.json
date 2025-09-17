@@ -1,0 +1,142 @@
+{
+  "validation_timestamp": "2025-09-17T01:24:33.688154Z",
+  "total_validation_time_s": 115.149,
+  "test_statistics": {
+    "total_tests": 5,
+    "successful_tests": 4,
+    "failed_tests": 1,
+    "success_rate": 0.8
+  },
+  "performance_metrics": {
+    "performance_threshold_ms": 60000,
+    "performance_compliant_tests": 5,
+    "performance_compliance_rate": 1.0,
+    "avg_duration_ms": 15925.31,
+    "max_duration_ms": 35512.13,
+    "container_performance_compliant": true
+  },
+  "prd_compliance": {
+    "verify_operations_60s": true,
+    "container_bootstrap_5s_p50": true,
+    "container_bootstrap_10s_p95": true,
+    "max_2_attempts": true
+  },
+  "overall_compliance_score": 0.94,
+  "detailed_results": [
+    {
+      "test_name": "single_operation_success_first_attempt",
+      "success": true,
+      "total_duration_ms": 5512.1660232543945,
+      "meets_60s_requirement": true,
+      "attempt_count": 1,
+      "error_message": null,
+      "metadata": {
+        "npm_ci_duration_ms": 2003.756046295166,
+        "npm_build_duration_ms": 3003.3340454101562,
+        "scenario": "success_first_attempt"
+      }
+    },
+    {
+      "test_name": "retry_operation_success_second_attempt",
+      "success": true,
+      "total_duration_ms": 9219.204902648926,
+      "meets_60s_requirement": true,
+      "attempt_count": 2,
+      "error_message": null,
+      "metadata": {
+        "attempt1_duration_ms": 2712.8279209136963,
+        "attempt2_duration_ms": 6506.3722133636475,
+        "npm_ci_duration_ms": 2501.102924346924,
+        "npm_build_duration_ms": 3500.901937484741,
+        "scenario": "success_second_attempt"
+      }
+    },
+    {
+      "test_name": "maximum_retry_performance_both_fail",
+      "success": false,
+      "total_duration_ms": 17319.64421272278,
+      "meets_60s_requirement": true,
+      "attempt_count": 2,
+      "error_message": "Both retry attempts failed (simulated)",
+      "metadata": {
+        "attempt1_duration_ms": 8810.883045196533,
+        "attempt2_duration_ms": 8508.725881576538,
+        "scenario": "both_attempts_fail"
+      }
+    },
+    {
+      "test_name": "container_setup_performance",
+      "success": true,
+      "total_duration_ms": 12063.400506973267,
+      "meets_60s_requirement": true,
+      "attempt_count": 1,
+      "error_message": null,
+      "metadata": {
+        "p50_ms": 602.8455495834351,
+        "p95_ms": 805.0036191940308,
+        "avg_ms": 603.1700253486633,
+        "sample_count": 20,
+        "all_times_ms": [
+          402.2252559661865,
+          501.7862319946289,
+          604.5751571655273,
+          704.1568756103516,
+          804.1198253631592,
+          404.13618087768555,
+          504.9278736114502,
+          604.1650772094727,
+          703.1738758087158,
+          801.5141487121582,
+          403.52892875671387,
+          501.31869316101074,
+          601.5260219573975,
+          705.0559520721436,
+          803.584098815918,
+          404.1430950164795,
+          504.17208671569824,
+          600.0757217407227,
+          700.1652717590332,
+          805.0501346588135
+        ]
+      }
+    },
+    {
+      "test_name": "edge_case_performance",
+      "success": true,
+      "total_duration_ms": 35512.134075164795,
+      "meets_60s_requirement": true,
+      "attempt_count": 3,
+      "error_message": null,
+      "metadata": {
+        "edge_case_results": [
+          {
+            "case_name": "large_project_simulation",
+            "total_duration_ms": 35512.134075164795,
+            "container_setup_time_s": 0.5,
+            "npm_ci_time_s": 15.0,
+            "npm_build_time_s": 20.0,
+            "meets_requirement": true
+          },
+          {
+            "case_name": "slow_container_startup",
+            "total_duration_ms": 15012.593030929565,
+            "container_setup_time_s": 2.0,
+            "npm_ci_time_s": 5.0,
+            "npm_build_time_s": 8.0,
+            "meets_requirement": true
+          },
+          {
+            "case_name": "network_delay_simulation",
+            "total_duration_ms": 20508.419036865234,
+            "container_setup_time_s": 0.5,
+            "npm_ci_time_s": 8.0,
+            "npm_build_time_s": 12.0,
+            "meets_requirement": true
+          }
+        ],
+        "all_meet_requirements": true,
+        "max_edge_case_time_ms": 35512.134075164795
+      }
+    }
+  ]
+}

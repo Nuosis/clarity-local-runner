@@ -1,5 +1,5 @@
 """
-Authentication API routes for Cedar Heights Music Academy.
+Authentication API routes for Clarity Local Runner.
 """
 
 import logging

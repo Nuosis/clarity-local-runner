@@ -1,5 +1,5 @@
 """
-Health check endpoints for Cedar Heights Music Academy API.
+Health check endpoints for Clarity Local Runner API.
 """
 
 import os

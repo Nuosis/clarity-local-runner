@@ -1,7 +1,7 @@
 """
-Cedar Heights Music Academy - Database Models
+Clarity Local Runner - Database Models
 
-This module contains all SQLAlchemy models for the music school management system.
+This module contains all SQLAlchemy models for the workflow orchestration system.
 Models are organized by domain for better maintainability.
 """
 

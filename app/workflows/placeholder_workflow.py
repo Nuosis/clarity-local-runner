@@ -6,14 +6,14 @@ from workflows.placeholder_workflow_nodes.initial_node import InitialNode
 
 class PlaceholderWorkflow(Workflow):
     workflow_schema = WorkflowSchema(
-        description="",
+        description="Simple placeholder workflow for testing",
         event_schema=PlaceholderEventSchema,
         start=InitialNode,
         nodes=[
             NodeConfig(
                 node=InitialNode,
                 connections=[],
-                description="",
+                description="Initial processing node for placeholder workflow",
             ),
         ],
     )

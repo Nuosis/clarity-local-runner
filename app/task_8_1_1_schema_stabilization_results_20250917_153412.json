@@ -1,0 +1,119 @@
+{
+  "success": false,
+  "passed": 14,
+  "total": 15,
+  "duration_ms": 29.643535614013672,
+  "failed_tests": [
+    {
+      "name": "Malformed nodes (non-dict)",
+      "error": "AssertionError: "
+    }
+  ],
+  "results": [
+    {
+      "name": "Snake_case field handling",
+      "passed": true,
+      "duration_ms": 23.2083797454834,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "CamelCase field handling",
+      "passed": true,
+      "duration_ms": 0.20456314086914062,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Nested event_data handling",
+      "passed": true,
+      "duration_ms": 0.18644332885742188,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Mixed schema variations",
+      "passed": true,
+      "duration_ms": 0.34117698669433594,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Malformed task_context (None)",
+      "passed": true,
+      "duration_ms": 0.40149688720703125,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Malformed task_context (non-dict)",
+      "passed": true,
+      "duration_ms": 0.10347366333007812,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Malformed metadata (non-dict)",
+      "passed": true,
+      "duration_ms": 0.530242919921875,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Malformed nodes (non-dict)",
+      "passed": false,
+      "duration_ms": 3.2701492309570312,
+      "error": "AssertionError: ",
+      "details": null
+    },
+    {
+      "name": "Invalid node structures",
+      "passed": true,
+      "duration_ms": 0.06103515625,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Invalid status values",
+      "passed": true,
+      "duration_ms": 0.05245208740234375,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Empty structures",
+      "passed": true,
+      "duration_ms": 0.25916099548339844,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Performance with large dataset",
+      "passed": true,
+      "duration_ms": 0.5710124969482422,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Utility functions",
+      "passed": true,
+      "duration_ms": 0.04291534423828125,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Backward compatibility",
+      "passed": true,
+      "duration_ms": 0.08320808410644531,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "Error recovery and logging",
+      "passed": true,
+      "duration_ms": 0.05602836608886719,
+      "error": null,
+      "details": null
+    }
+  ]
+}
